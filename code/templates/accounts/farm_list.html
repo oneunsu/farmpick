@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}내 농장 - FarmPick{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-house-fill text-success me-2"></i>내 농장</h4>
+  <div class="d-flex gap-2">
+    <a href="{% url 'farm_create' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-circle me-1"></i>농장 등록
+    </a>
+  </div>
+</div>
+
+{% if farms %}
+  <div class="row g-3">
+    {% for farm in farms %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 p-3">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-flower2 text-success me-2" style="font-size:1.4rem;"></i>
+            <h5 class="mb-0 fw-bold">{{ farm.name }}</h5>
+            <span class="badge bg-info text-dark ms-2" style="font-size:0.7rem;">
+              <i class="bi bi-building me-1"></i>시설재배
+            </span>
+          </div>
+          <ul class="list-unstyled text-muted small mb-3">
+            <li><i class="bi bi-tag me-1"></i>작물: <strong class="text-dark">{{ farm.get_crop_type_display }}</strong></li>
+            <li><i class="bi bi-geo-alt me-1"></i>지역: <strong class="text-dark">{{ farm.region_code }}</strong></li>
+            <li><i class="bi bi-grid-3x3 me-1"></i>격자: {{ farm.nx }}, {{ farm.ny }}</li>
+            {% if farm.planting_date %}
+              <li><i class="bi bi-calendar2-check me-1"></i>정식일: {{ farm.planting_date }}</li>
+            {% endif %}
+          </ul>
+
+          <div class="mt-auto d-flex gap-2">
+            <a href="{% url 'calendar_app:summary' %}?farm={{ farm.pk }}" class="btn btn-sm btn-outline-success flex-fill">
+              <i class="bi bi-grid-1x2 me-1"></i>수확·출하 요약
+            </a>
+            <a href="{% url 'farm_update' farm.pk %}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{% url 'farm_delete' farm.pk %}" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-trash"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card p-5 text-center">
+    <i class="bi bi-emoji-smile text-muted" style="font-size:3rem;"></i>
+    <h5 class="mt-3 text-muted">등록된 농장이 없습니다</h5>
+    <p class="text-muted">농장을 등록하면 정식·수확 일정과 KAMIS 가격정보를 확인할 수 있습니다.</p>
+    <a href="{% url 'farm_create' %}" class="btn btn-primary mx-auto" style="width:fit-content;">
+      <i class="bi bi-plus-circle me-1"></i>첫 농장 등록하기
+    </a>
+  </div>
+{% endif %}
+{% endblock %}

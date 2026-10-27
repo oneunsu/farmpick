@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}출하 수취액 입력 · FarmPick{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4"><div><p class="text-success fw-semibold mb-1">{{ farm.name }} · {{ farm.get_crop_type_display }}</p><h1 class="h3 fw-bold">{% if plan.pk %}출하 가정 수정{% else %}출하 수취액 계산{% endif %}</h1><p class="text-muted">동일한 수확물을 각 판로에 전량 판매하는 대안을 비교합니다.</p></div><div><a class="btn btn-outline-secondary" href="{% url 'forecaster:revenue_list' %}?farm={{ farm.pk }}">저장된 계산</a></div></div>
+<form method="post" id="revenue-form">
+  {% csrf_token %}<input type="hidden" name="farm" value="{{ farm.pk }}"><input type="hidden" name="version" value="{{ version }}"><input type="hidden" name="forecast_run" value="{% if linked_forecast %}{{ linked_forecast.pk }}{% endif %}">
+  <p class="small text-muted">{% if linked_forecast %}{{ linked_forecast.issued_at|date:'Y.m.d H:i' }} 생성 전망을 연결합니다. 수확일을 바꾸면 새 전망을 발행합니다.{% else %}저장 시점의 수확일 전망을 함께 보존합니다. 판매단가는 견적·계약·직접 입력값을 사용합니다.{% endif %}</p>
+  {{ form.non_field_errors }}
+  <section class="card p-3 mb-4"><h2 class="h5 mb-3">수확량과 판매가능 수량</h2><div class="row g-3">
+  {% for field in form %}<div class="{% if field.name == 'title' %}col-12{% else %}col-md-6{% endif %}">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.name == 'production_cost' %}<div class="form-text">이번 수확물 전체에 해당하는 생산비입니다. 미입력이면 수취액만, 0원을 포함해 입력한 경우 예상 순이익까지 계산합니다.</div>{% endif %}</div>{% endfor %}
+  </div><p class="small text-muted mt-3 mb-0">판매가능 수량 = 예상 수확량 × 판매가능 비율. 소수 셋째 자리 kg까지 반올림합니다.</p></section>
+  <div class="d-flex justify-content-between mb-3"><h2 class="h4">판로별 단가와 출하비용</h2><a href="{% url 'forecaster:markets' %}?farm={{ farm.pk }}" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm">시장 정산자료 참고</a></div>
+  {{ formset.management_form }}{{ formset.non_form_errors }}
+  <div id="channel-forms">{% for channel_form in formset %}{% include 'forecaster/revenue_channel.html' %}{% endfor %}</div>
+  <template id="empty-channel">{% include 'forecaster/revenue_channel.html' with channel_form=formset.empty_form %}</template>
+  <div class="d-flex flex-wrap gap-2 mb-4"><button type="button" id="add-channel" class="btn btn-outline-success">판로 추가</button><button type="submit" class="btn btn-success">저장하고 수취액 계산</button></div>
+  <p class="small text-muted">단가·물량·비용은 입력한 가정이며 실제 판매나 정산 결과를 보장하지 않습니다. 시장 정산가격과 KAMIS 참고가격을 농가의 확정 판매단가로 사용하지 않습니다.</p>
+</form>
+{{ harvest_dates|json_script:'harvest-date-map' }}
+{% endblock %}
+{% block extra_js %}
+<script>
+const channelContainer = document.getElementById('channel-forms');
+function bindChannel(card) {
+  const mode = card.querySelector('[name$="-transport_mode"]');
+  function updateMode() {
+    card.querySelectorAll('[data-transport]').forEach(el => {
+      el.hidden = el.dataset.transport !== mode.value;
+      el.querySelectorAll('input').forEach(input => { input.disabled = el.hidden; });
+    });
+  }
+  mode.addEventListener('change', updateMode);
+  updateMode();
+  const clearReference = card.querySelector('[data-clear-reference]');
+  if (clearReference) clearReference.addEventListener('click', () => {
+    card.querySelector('[name$="-reference_settlement"]').value = '';
+    card.querySelector('[name$="-price_source"]').value = 'manual';
+    clearReference.parentElement.hidden = true;
+  });
+}
+channelContainer.querySelectorAll('.channel-card').forEach(bindChannel);
+document.getElementById('add-channel').addEventListener('click', () => {
+  const total = document.getElementById('id_channels-TOTAL_FORMS');
+  const index = Number(total.value);
+  if (index >= 100) { alert('한 계산에 최대 100개 판로를 입력할 수 있습니다.'); return; }
+  const template = document.createElement('template');
+  template.innerHTML = document.getElementById('empty-channel').innerHTML.replaceAll('__prefix__', String(index));
+  const card = template.content.firstElementChild;
+  channelContainer.appendChild(card);
+  bindChannel(card);
+  total.value = String(index + 1);
+  card.querySelector('[name$="-name"]').focus();
+});
+const dateMap = JSON.parse(document.getElementById('harvest-date-map').textContent);
+document.getElementById('id_harvest_schedule').addEventListener('change', event => {
+  if (dateMap[event.target.value]) document.getElementById('id_harvest_date').value = dateMap[event.target.value];
+});
+</script>
+{% endblock %}

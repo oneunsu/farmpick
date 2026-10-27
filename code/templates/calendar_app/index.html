@@ -1,0 +1,733 @@
+{% extends 'base.html' %}
+{% load ui_assets %}
+{% block title %}영농 캘린더 - FarmPick{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js -->
+<script src="{% ui_asset 'vendor/chartjs/chart.umd.js' %}"></script>
+<style>
+  /* ── 레이아웃 ── */
+  body { background: #f0f4f0; }
+  .cal-wrap { display: flex; gap: 1rem; align-items: flex-start; }
+  .cal-sidebar {
+    width: 280px; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: .8rem;
+  }
+  .cal-main { flex: 1; min-width: 0; }
+
+  /* ── FullCalendar 커스텀 ── */
+  .fc { background: #fff; border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: .5rem; }
+  .fc-toolbar-title { font-size: 1.1rem !important; font-weight: 700; }
+  .fc-daygrid-day-number { font-weight: 600; }
+  .fc-event { border-radius: 4px !important; font-size: .72rem !important;
+              margin-bottom: 1px !important; cursor: pointer; }
+  .fc-event:hover { filter: brightness(0.92); }
+  /* 드래그 중 커서 */
+  .fc-event.fc-event-dragging { opacity: .75; cursor: grabbing !important; }
+  /* 사이드바 카드 */
+  .sidebar-card { background:#fff; border-radius:12px;
+    box-shadow:0 2px 12px rgba(0,0,0,.08); padding:1rem; }
+  .sidebar-card h6 { font-weight:700; margin-bottom:.6rem;
+    font-size:.85rem; color:#2d6a4f; text-transform:uppercase; letter-spacing:.5px; }
+  .legend-item { display:flex; align-items:center; font-size:.82rem; margin-bottom:.3rem; }
+  .legend-box { width:14px; height:14px; border-radius:3px; margin-right:8px; flex-shrink:0; }
+
+  /* ── 모달 ── */
+  .schedule-item {
+    border-left: 4px solid #ccc; padding: .5rem .7rem;
+    margin-bottom: .4rem; border-radius: 0 6px 6px 0;
+    background:#fafafa; font-size:.85rem;
+    transition: background .15s;
+  }
+  .schedule-item:hover { background: #f0f0f0; }
+  .schedule-item.done { opacity:.5; text-decoration:line-through; }
+
+  /* 드래그 힌트 */
+  .drag-hint { font-size:.75rem; color:#aaa; text-align:right;
+    padding: .2rem .4rem; }
+
+  @media (max-width: 768px) {
+    .cal-wrap { flex-direction: column; }
+    .cal-sidebar { width: 100%; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="toastContainer" style="position:sticky;top:0;z-index:1050;"></div>
+
+{% if not farm %}
+  <div class="card p-5 text-center">
+    <i class="bi bi-exclamation-circle text-warning" style="font-size:3rem;"></i>
+    <h5 class="mt-3">등록된 농장이 없습니다</h5>
+    <a href="{% url 'farm_create' %}" class="btn btn-primary mx-auto mt-2" style="width:fit-content;">
+      <i class="bi bi-plus-circle me-1"></i>농장 등록
+    </a>
+  </div>
+{% else %}
+
+<div class="page-heading"><div><p class="eyebrow">정식부터 수확까지</p><h1>캘린더</h1><p class="text-muted mb-0">{{ farm.name }}의 재배 일정을 관리하세요.</p></div>
+<form method="post" action="{% url 'calendar_app:generate_schedule' %}">{% csrf_token %}<input type="hidden" name="farm" value="{{ farm.pk }}"><button type="submit" class="btn btn-outline-success" {% if not farm.planting_date %}disabled title="농장 관리에서 정식일을 설정하세요"{% endif %}><i class="bi bi-magic me-1"></i>정식·수확 일정 생성</button></form></div>
+<!-- ────── 메인 레이아웃 ────── -->
+<div class="cal-wrap">
+
+  <!-- ── 사이드바 ── -->
+  <div class="cal-sidebar">
+
+
+
+    <div class="sidebar-card">
+      <h6><i class="bi bi-list-check me-1"></i>작업 유형</h6>
+      <div class="legend-item"><span class="legend-box" style="background:#3498DB;"></span>정식</div>
+      <div class="legend-item"><span class="legend-box" style="background:#E74C3C;"></span>방제</div>
+      <div class="legend-item"><span class="legend-box" style="background:#2ECC71;"></span>관수</div>
+      <div class="legend-item"><span class="legend-box" style="background:#F39C12;"></span>시비</div>
+      <div class="legend-item"><span class="legend-box" style="background:#9B59B6;"></span>적심/전정</div>
+      <div class="legend-item"><span class="legend-box" style="background:#1ABC9C;"></span>수확</div>
+      <div class="legend-item"><span class="legend-box" style="background:#95A5A6;"></span>생육 점검</div>
+      <div class="legend-item"><span class="legend-box" style="background:#5DADE2;"></span>환기 (시설)</div>
+      <div class="legend-item"><span class="legend-box" style="background:#E59866;"></span>가온 (시설)</div>
+    </div>
+
+    <div class="sidebar-card">
+      <h6><i class="bi bi-info me-1"></i>농장 정보</h6>
+      <ul class="list-unstyled small text-muted mb-0">
+        <li><i class="bi bi-tag me-1"></i>작물: <strong class="text-dark">{{ farm.get_crop_type_display }}</strong></li>
+        <li><i class="bi bi-geo-alt me-1"></i>지역: <strong class="text-dark">{{ farm.region_code }}</strong></li>
+        {% if farm.planting_date %}
+          <li><i class="bi bi-calendar2-check me-1"></i>정식일: {{ farm.planting_date }}</li>
+        {% else %}
+          <li class="text-warning"><i class="bi bi-exclamation-triangle me-1"></i>정식일 미설정</li>
+        {% endif %}
+      </ul>
+      <a href="{% url 'farm_update' farm.pk %}" class="btn btn-outline-secondary btn-sm mt-2 w-100">
+        <i class="bi bi-pencil me-1"></i>농장 정보 수정
+      </a>
+    </div>
+
+  </div><!-- /sidebar -->
+
+  <!-- ── 캘린더 ── -->
+  <div class="cal-main">
+    <div class="drag-hint"><i class="bi bi-arrows-move me-1"></i>일정을 드래그해서 날짜를 변경할 수 있습니다</div>
+    <div id="calendar"></div>
+  </div>
+
+</div><!-- /cal-wrap -->
+{% endif %}
+
+<!-- ════════════════════════════════
+     날짜 상세 / 일정 추가 모달
+════════════════════════════════ -->
+<div class="modal fade" id="dayModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="modalDateTitle">날짜 상세</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="modalPriceContent" class="mb-3"></div>
+        <!-- 일정 헤더 -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-semibold mb-0 text-muted">
+            <i class="bi bi-list-check me-1"></i>영농 일정
+          </h6>
+          <button class="btn btn-sm btn-outline-primary" onclick="showAddScheduleForm()">
+            <i class="bi bi-plus me-1"></i>일정 추가
+          </button>
+        </div>
+        <div id="modalScheduleContent">
+          <p class="text-muted small">이 날짜에 예정된 일정이 없습니다.</p>
+        </div>
+
+        <!-- 일정 추가 폼 -->
+        <div id="addScheduleForm" class="d-none mt-3 p-3 border rounded bg-light">
+          <h6 class="fw-semibold mb-3">새 일정 추가</h6>
+          <form id="addScheduleFormEl" onsubmit="submitAddSchedule(event)">
+            {% csrf_token %}
+            <input type="hidden" name="farm" value="{{ farm.pk }}">
+            <input type="hidden" name="scheduled_at" id="addScheduleDate">
+            <div class="row g-2">
+              <div class="col-6">
+                <label class="form-label small fw-semibold">작업 유형</label>
+                <select name="task_type" class="form-select form-select-sm">
+                  <option value="planting">정식</option>
+                  <option value="pesticide">방제</option>
+                  <option value="irrigation">관수</option>
+                  <option value="fertilizer">시비</option>
+                  <option value="pruning">적심/전정</option>
+                  <option value="harvest">수확</option>
+                  <option value="inspection" selected>생육 점검</option>
+                  <option value="ventilation">환기</option>
+                  <option value="heating">가온</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold">일정 이름</label>
+                <input type="text" name="task_name" class="form-control form-control-sm"
+                       placeholder="예) 2차 방제" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold">메모 (선택)</label>
+                <input type="text" name="note" class="form-control form-control-sm" placeholder="메모">
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-2">
+              <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-check me-1"></i>추가
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm"
+                      onclick="hideAddScheduleForm()">취소</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     일정 수정 모달
+════════════════════════════════ -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">일정 수정</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label small fw-semibold">작업 유형</label>
+            <select id="editTaskType" class="form-select form-select-sm">
+              <option value="planting">정식</option>
+              <option value="pesticide">방제</option>
+              <option value="irrigation">관수</option>
+              <option value="fertilizer">시비</option>
+              <option value="pruning">적심/전정</option>
+              <option value="harvest">수확</option>
+              <option value="inspection">생육 점검</option>
+              <option value="ventilation">환기</option>
+              <option value="heating">가온</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-semibold">일정 이름</label>
+            <input type="text" id="editTaskName" class="form-control form-control-sm">
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-semibold">날짜</label>
+            <input type="date" id="editScheduledAt" class="form-control form-control-sm">
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-semibold">메모</label>
+            <input type="text" id="editNote" class="form-control form-control-sm" placeholder="메모 (선택)">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger btn-sm me-auto"
+                id="editDeleteBtn">
+          <i class="bi bi-trash me-1"></i>삭제
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-primary btn-sm"
+                id="editSaveBtn">
+          <i class="bi bi-check me-1"></i>저장
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     가격 예측 그래프 모달
+════════════════════════════════ -->
+<div class="modal fade" id="priceChartModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">🌾 수확기 예상 가격 추이</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <canvas id="priceChart" height="120"></canvas>
+        <p class="small text-muted mt-3 mb-0">선정한 한 모델의 KAMIS 참고가격 전망입니다. 수확일까지 7일 미만 또는 180일 초과 기간의 성능은 별도 검증 전입니다. 실제 농가 판매단가와는 다를 수 있습니다.</p>
+        <small class="text-muted">
+          ※ 점선은 KAMIS 참고 도매가격의 예측이며, 농가의 실제 판매가격이나 수익을 보장하지 않습니다.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- FullCalendar 6의 표준 묶음에 interaction과 CSS 주입이 포함된다. -->
+<script src="{% ui_asset 'vendor/fullcalendar/index.global.min.js' %}"></script>
+<script>
+// ── 설정 ──────────────────────────────────────────────────────
+const FARM_ID    = {{ farm.pk|default:'null' }};
+const CSRF_TOKEN = '{{ csrf_token }}';
+const API_URL    = "{% url 'calendar_app:schedule_api' %}";
+const UPDATE_URL = "{% url 'calendar_app:update_schedule' %}";
+const TOGGLE_URL = "{% url 'calendar_app:toggle_done' %}";
+const DELETE_URL = "{% url 'calendar_app:delete_schedule' %}";
+
+const TASK_COLORS_MAP = {
+  planting:'#3498DB', pesticide:'#E74C3C', irrigation:'#2ECC71',
+  fertilizer:'#F39C12', pruning:'#9B59B6', harvest:'#1ABC9C',
+  inspection:'#95A5A6', ventilation:'#5DADE2', heating:'#E59866',
+};
+const TASK_LABEL = {
+  planting:'정식', pesticide:'방제', irrigation:'관수', fertilizer:'시비',
+  pruning:'적심/전정', harvest:'수확', inspection:'생육 점검',
+  ventilation:'환기', heating:'가온',
+};
+
+// ── 날짜별 이벤트 캐시 ────────────────────────────────────────
+let eventsByDate = {};
+// 현재 열린 모달 날짜
+let currentModalDate = null;
+
+async function readJSONResponse(response) {
+  if (response.redirected || !(response.headers.get('content-type') || '').includes('application/json')) {
+    throw new Error('화면 데이터 대신 로그인 페이지 또는 오류 페이지가 반환됐습니다. 다시 로그인한 뒤 확인해주세요.');
+  }
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || '화면 데이터를 불러오지 못했습니다.');
+  return data;
+}
+
+// ── FullCalendar 초기화 ────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  if (!FARM_ID) return;
+  if (typeof FullCalendar === 'undefined') {
+    showToast('캘린더 스크립트를 불러오지 못했습니다. 서버를 재시작한 뒤 새로고침해주세요.', 'danger');
+    return;
+  }
+
+  const calEl = document.getElementById('calendar');
+  const cal   = new FullCalendar.Calendar(calEl, {
+    locale:      'ko',
+    initialView: 'dayGridMonth',
+    height:      'auto',
+    headerToolbar: {
+      left:   'prev,next today',
+      center: 'title',
+      right:  'dayGridMonth,dayGridWeek',
+    },
+    buttonText: { today:'오늘', month:'월', week:'주' },
+
+    // ── 드래그앤드롭 활성화 ──
+    editable:        true,   // 드래그앤드롭 + 리사이즈
+    droppable:       true,
+    eventStartEditable: true,
+
+    // ── 캐시 방지 ──
+    lazyFetching: false,
+
+    // ── 이벤트 소스 ──
+    events: function (info, successCb, failureCb) {
+      const params = new URLSearchParams({
+        farm:  FARM_ID,
+        start: info.startStr,
+        end:   info.endStr,
+      });
+      fetch(`${API_URL}?${params}&_=${Date.now()}`)
+        .then(readJSONResponse)
+        .then(data => {
+          eventsByDate = {};
+          data.forEach(ev => {
+            const d = ev.start.slice(0, 10);
+            if (!eventsByDate[d]) eventsByDate[d] = {schedules: [], price: null};
+            if (ev.type === 'schedule') eventsByDate[d].schedules.push(ev);
+            if (ev.type === 'price')    eventsByDate[d].price = ev;
+          });
+          successCb(data);
+        })
+        .catch(error => { showToast(error.message, 'danger'); failureCb(error); });
+    },
+
+    // ── 드래그 완료 → 날짜 변경 저장 ──
+    eventDrop: function (info) {
+      const ev = info.event;
+      // 가격 이벤트는 이동 불가
+      if (ev.extendedProps.type === 'price') {
+        info.revert();
+        return;
+      }
+      const scheduleId  = ev.id.replace('schedule_', '');
+      const newDate     = ev.startStr.slice(0, 10);
+
+      fetch(UPDATE_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+        body:    JSON.stringify({ schedule_id: scheduleId, scheduled_at: newDate }),
+      })
+      .then(readJSONResponse)
+      .then(data => {
+        if (data.ok) {
+          showToast(`📅 "${data.task_name}" → ${newDate} 으로 이동했습니다.`, 'success');
+          cal.refetchEvents();
+        } else {
+          info.revert();
+          showToast(`이동 실패: ${data.error}`, 'danger');
+        }
+      })
+      .catch(() => { info.revert(); showToast('서버 오류가 발생했습니다.', 'danger'); });
+    },
+
+    // ── 빈 날짜 클릭 → 날짜 모달 ──
+    dateClick: function (info) {
+      openDayModal(info.dateStr);
+    },
+
+    // ── 이벤트 클릭 ──
+    eventClick: function (info) {
+      const ev   = info.event;
+      const type = ev.extendedProps.type;
+
+      if (type === 'schedule') {
+        // 일정 클릭 → 수정 모달
+        const id = ev.id.replace('schedule_', '');
+        openEditModal({
+          id:           id,
+          task_type:    ev.extendedProps.task_type,
+          task_name:    ev.title.replace('✅ ', '').split(' | ')[0],
+          scheduled_at: ev.startStr.slice(0, 10),
+          note:         ev.extendedProps.note || '',
+        });
+        return;
+      }
+
+      if (type === 'price') {
+        // 가격 예측 클릭 → 가격 추이 그래프
+        fetchAndShowPriceChart();
+        return;
+      }
+    },
+
+    // 오늘 날짜 셀 강조
+    dayCellDidMount: function (arg) {
+      const today = new Date();
+      if (arg.date.toDateString() === today.toDateString()) {
+        arg.el.style.background = 'rgba(45,106,79,.08)';
+      }
+    },
+  });
+
+  cal.render();
+  window._calendar = cal;
+});
+
+// ── 날짜 상세 모달 ────────────────────────────────────────────
+function openDayModal(dateStr) {
+  currentModalDate = dateStr;
+  const data = eventsByDate[dateStr] || { schedules: [], price: null };
+
+  const d = new Date(dateStr + 'T00:00:00');
+  document.getElementById('modalDateTitle').textContent =
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+
+  const priceEl = document.getElementById('modalPriceContent');
+  priceEl.textContent = data.price && data.price.price != null
+    ? `수확일 예상 참고가: ${Number(data.price.price).toLocaleString()}원/kg` : '';
+  renderScheduleSection(data.schedules, dateStr);
+  document.getElementById('addScheduleDate').value = dateStr;
+  document.getElementById('addScheduleForm').classList.add('d-none');
+
+  new bootstrap.Modal(document.getElementById('dayModal')).show();
+}
+
+// ── 일정 목록 렌더링 ───────────────────────────────────────────
+function renderScheduleSection(schedules, dateStr) {
+  const el = document.getElementById('modalScheduleContent');
+  if (!schedules.length) {
+    el.innerHTML = '<p class="text-muted small">이 날짜에 예정된 일정이 없습니다.</p>';
+    return;
+  }
+  let html = '';
+  schedules.forEach(s => {
+    const id    = s.id.replace('schedule_', '');
+    const color = s.color;
+    const done  = s.is_done;
+    const label = TASK_LABEL[s.task_type] || s.task_type;
+    // 가격 표시 (title에서 파싱)
+    const titleClean = s.title.replace('✅ ', '');
+    html += `
+      <div class="schedule-item ${done ? 'done' : ''}" style="border-color:${color};" id="si_${id}">
+        <div class="d-flex justify-content-between align-items-start">
+          <div style="min-width:0;">
+            <span class="badge me-1" style="background:${color};color:#fff;">${label}</span>
+            <strong>${titleClean}</strong>
+            ${s.note ? `<div class="text-muted small mt-1">${s.note}</div>` : ''}
+          </div>
+          <div class="d-flex gap-1 ms-2 flex-shrink-0">
+            <!-- 완료 토글 -->
+            <button class="btn btn-sm ${done ? 'btn-success' : 'btn-outline-success'}"
+                    onclick="toggleDone(${id})" title="${done ? '완료 취소':'완료 처리'}">
+              <i class="bi ${done ? 'bi-check-circle-fill':'bi-circle'}"></i>
+            </button>
+            <!-- 수정 -->
+            <button class="btn btn-sm btn-outline-secondary"
+                    onclick='openEditModal(${JSON.stringify({
+                      id: id,
+                      task_type: s.task_type,
+                      task_name: titleClean.split(" | ")[0],
+                      scheduled_at: dateStr,
+                      note: s.note || "",
+                    })})' title="수정">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <!-- 삭제 -->
+            <button class="btn btn-sm btn-outline-danger"
+                    onclick="deleteSchedule(${id})" title="삭제">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ── 수정 모달 ─────────────────────────────────────────────────
+let editingId = null;
+
+function openEditModal(data) {
+  editingId = data.id;
+  document.getElementById('editTaskType').value    = data.task_type;
+  document.getElementById('editTaskName').value    = data.task_name;
+  document.getElementById('editScheduledAt').value = data.scheduled_at;
+  document.getElementById('editNote').value        = data.note;
+
+  // 수정 모달이 열릴 때 날짜 모달은 뒤로
+  const dayModalEl = document.getElementById('dayModal');
+  const editModal  = new bootstrap.Modal(document.getElementById('editModal'));
+  editModal.show();
+}
+
+// 저장
+document.getElementById('editSaveBtn').addEventListener('click', function () {
+  if (!editingId) return;
+  const payload = {
+    schedule_id:  editingId,
+    task_type:    document.getElementById('editTaskType').value,
+    task_name:    document.getElementById('editTaskName').value.trim(),
+    scheduled_at: document.getElementById('editScheduledAt').value,
+    note:         document.getElementById('editNote').value.trim(),
+  };
+  if (!payload.task_name) { alert('일정 이름을 입력해 주세요.'); return; }
+
+  fetch(UPDATE_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+    body:    JSON.stringify(payload),
+  })
+  .then(readJSONResponse)
+  .then(data => {
+    if (data.ok) {
+      bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+      showToast(`✏️ "${data.task_name}" 일정이 수정되었습니다.`, 'success');
+      if (window._calendar) window._calendar.refetchEvents();
+      // 날짜 모달 열려 있으면 내용 갱신
+      if (currentModalDate) {
+        setTimeout(() => openDayModal(currentModalDate), 300);
+      }
+    } else {
+      showToast(`수정 실패: ${data.error}`, 'danger');
+    }
+  });
+});
+
+// 수정 모달에서 삭제
+document.getElementById('editDeleteBtn').addEventListener('click', function () {
+  if (!editingId || !confirm('이 일정을 삭제하시겠습니까?')) return;
+  _deleteSchedule(editingId, () => {
+    bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+  });
+});
+
+// ── 완료 토글 ─────────────────────────────────────────────────
+function toggleDone(id) {
+  fetch(TOGGLE_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': CSRF_TOKEN },
+    body:    `schedule_id=${id}`,
+  })
+  .then(readJSONResponse)
+  .then(data => {
+    if (window._calendar) window._calendar.refetchEvents();
+    const el = document.getElementById(`si_${id}`);
+    if (el) {
+      el.classList.toggle('done', data.is_done);
+      const btn = el.querySelector('button');
+      btn.className = `btn btn-sm ${data.is_done ? 'btn-success' : 'btn-outline-success'}`;
+      btn.querySelector('i').className = `bi ${data.is_done ? 'bi-check-circle-fill':'bi-circle'}`;
+    }
+  });
+}
+
+// ── 일정 삭제 ─────────────────────────────────────────────────
+function deleteSchedule(id) {
+  if (!confirm('이 일정을 삭제하시겠습니까?')) return;
+  _deleteSchedule(id);
+}
+
+function _deleteSchedule(id, callback) {
+  fetch(DELETE_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': CSRF_TOKEN },
+    body:    `schedule_id=${id}`,
+  })
+  .then(readJSONResponse)
+  .then(() => {
+    document.getElementById(`si_${id}`)?.remove();
+    if (window._calendar) window._calendar.refetchEvents();
+    showToast('일정이 삭제되었습니다.', 'secondary');
+    if (callback) callback();
+  }).catch(error => showToast(error.message, 'danger'));
+}
+
+// ── 가격 예측 ────────────────────────────────────────────────
+// 가격 이벤트 클릭 시 그래프 조회
+function fetchAndShowPriceChart() {
+  fetch(`/forecaster/api/forecast/{{ farm.pk }}/?_=${Date.now()}`)
+    .then(readJSONResponse)
+    .then(data => {
+      if (data.reason) showToast(data.reason, 'warning');
+      showPriceChart(data.forecasts, data.history || []);
+    })
+    .catch(e => showToast(`가격 데이터 조회 실패: ${e}`, 'danger'));
+}
+
+// ── 가격 추이 그래프 모달 ──────────────────────────────────────
+let _priceChartInstance = null;
+function showPriceChart(forecasts, history) {
+  if (typeof Chart === 'undefined') {
+    showToast('차트 스크립트를 불러오지 못했습니다. 서버를 재시작한 뒤 새로고침해주세요.', 'danger');
+    return;
+  }
+  const observedDates = [...new Set([
+    ...history.map(h => h.date),
+    ...forecasts.map(f => f.date),
+  ])].sort();
+  // 날짜 전용 UTC 연산으로 모든 날짜를 나열하고, 값이 없는 날은 null로 선을 끊는다.
+  const labels = [];
+  if (observedDates.length) {
+    const cursor = new Date(observedDates[0] + 'T00:00:00Z');
+    const last = observedDates[observedDates.length - 1];
+    while (cursor.toISOString().slice(0, 10) <= last) {
+      labels.push(cursor.toISOString().slice(0, 10));
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+  }
+
+  const histMap   = Object.fromEntries(history.map(h   => [h.date, h.price]));
+  const fcMap     = Object.fromEntries(forecasts.map(f => [f.date, f.price]));
+
+  const historyData  = labels.map(d => histMap[d]   ?? null);
+  const forecastData = labels.map(d => fcMap[d]     ?? null);
+
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  if (_priceChartInstance) {
+    _priceChartInstance.destroy();
+  }
+  _priceChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: '실제 가격',
+          data: historyData,
+          borderColor: '#3498DB',
+          backgroundColor: '#3498DB',
+          borderDash: [],
+          tension: 0.2,
+          pointRadius: 0,
+          spanGaps: false,
+        },
+        {
+          label: '수확일 가격 전망 · KAMIS 참고가',
+          data: forecastData,
+          borderColor: '#27AE60',
+          backgroundColor: '#27AE60',
+          borderDash: [6, 3],
+          tension: 0.2,
+          pointRadius: 2,
+          spanGaps: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { type: 'category', title: { display: true, text: '날짜' } },
+        y: { title: { display: true, text: '원/kg' } },
+      },
+    },
+  });
+
+  new bootstrap.Modal(document.getElementById('priceChartModal')).show();
+}
+
+// ── 토스트 메시지 ─────────────────────────────────────────────
+function showToast(html, type) {
+  const container = document.getElementById('toastContainer');
+  const id  = 'toast_' + Date.now();
+  const div = document.createElement('div');
+  div.id        = id;
+  div.className = `alert alert-${type} alert-dismissible fade show py-2 shadow-sm`;
+  div.textContent = html;
+  const close = document.createElement('button');
+  close.type = 'button'; close.className = 'btn-close';
+  close.dataset.bsDismiss = 'alert'; close.setAttribute('aria-label', '알림 닫기');
+  div.append(close);
+  container.appendChild(div);
+  setTimeout(() => { document.getElementById(id)?.remove(); }, 5000);
+}
+
+// ── 일정 추가 폼 제출 (Ajax) ──────────────────────────────────
+function submitAddSchedule(e) {
+  e.preventDefault();
+  const form = document.getElementById('addScheduleFormEl');
+  const data = new FormData(form);
+
+  fetch("{% url 'calendar_app:add_schedule' %}", {
+    method:  'POST',
+    headers: { 'X-CSRFToken': CSRF_TOKEN },
+    body:    data,
+  })
+  .then(readJSONResponse)
+  .then(result => {
+    if (result.ok) {
+      hideAddScheduleForm();
+      form.reset();
+      showToast(`📋 "${result.task_name}" 일정이 추가되었습니다.`, 'success');
+      if (window._calendar) window._calendar.refetchEvents();
+      if (currentModalDate) {
+        setTimeout(() => openDayModal(currentModalDate), 300);
+      }
+    } else {
+      showToast(`추가 실패: ${result.error}`, 'danger');
+    }
+  })
+  .catch(err => showToast(`요청 실패: ${err}`, 'danger'));
+}
+
+// ── 일정 추가 폼 토글 ─────────────────────────────────────────
+function showAddScheduleForm() {
+  document.getElementById('addScheduleForm').classList.remove('d-none');
+}
+function hideAddScheduleForm() {
+  document.getElementById('addScheduleForm').classList.add('d-none');
+}
+</script>
+{% endblock %}

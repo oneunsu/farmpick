@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}전망 발행 이력 · FarmPick{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">{% if farm %}{{ farm.name }}{% endif %}</p><h1>전망 발행 이력</h1><p class="text-muted mb-0">발행 시점의 결과를 날짜별로 다시 확인하세요.</p></div>{% if farm %}<a class="btn btn-success" href="{% url 'forecaster:harvest_outlook' farm.pk %}">새 전망 확인</a>{% endif %}</div>
+<div class="card table-responsive"><table class="table mb-0"><thead><tr><th scope="col">전망 생성 시각</th><th scope="col">대상일</th><th scope="col">저장한 참고가격</th><th scope="col">결과</th></tr></thead><tbody>{% for run in runs %}<tr><td><a href="{% url 'forecaster:forecast_run' run.pk %}">{{ run.issued_at|date:'Y.m.d H:i:s' }}</a></td><td>{{ run.target_date|date:'Y.m.d' }}</td><td>{% if run.status == 'success' %}{{ run.payload.outlook.base|floatformat:'0g' }}원/kg{% else %}—{% endif %}</td><td>{{ run.get_status_display }}{% if run.payload.market_projection %}<span class="badge text-bg-light d-block mt-1">시장 수취액 시나리오 포함</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="4" class="text-center p-4">아직 발행한 전망이 없습니다. 전망 화면에서 저장하거나 출하 계획을 저장하면 이력이 남습니다.</td></tr>{% endfor %}</tbody></table></div>
+<div class="d-flex gap-2 my-3">{% if runs.has_previous %}<a class="btn btn-sm btn-outline-secondary" href="?farm={{ farm.pk }}&page={{ runs.previous_page_number }}">이전</a>{% endif %}{% if runs.has_next %}<a class="btn btn-sm btn-outline-secondary" href="?farm={{ farm.pk }}&page={{ runs.next_page_number }}">다음</a>{% endif %}</div>
+{% endblock %}

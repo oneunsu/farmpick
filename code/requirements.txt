@@ -1,0 +1,14 @@
+# Verified on Windows x64, Python 3.10.20; CUDA build for RTX 3060 Ti
+--extra-index-url https://download.pytorch.org/whl/cu130
+Django==5.2.14
+python-dotenv==1.2.4
+timesfm==1.3.0
+torch==2.12.0+cu130
+numpy==2.2.6
+pandas==2.3.3
+requests==2.34.2
+huggingface_hub==1.15.0
+matplotlib==3.10.9
+scikit-learn==1.7.2
+joblib==1.5.3
+threadpoolctl==3.6.0

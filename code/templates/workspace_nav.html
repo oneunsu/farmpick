@@ -1,0 +1,10 @@
+{% with route=request.resolver_match.url_name namespace=request.resolver_match.namespace %}
+<p class="workspace-nav-label">수확과 출하</p>
+<a class="workspace-link {% if route == 'summary' %}active{% endif %}" {% if route == 'summary' %}aria-current="page"{% endif %} href="{% url 'calendar_app:summary' %}{% if selected_farm %}?farm={{ selected_farm.pk }}{% endif %}"><i class="bi bi-grid-1x2"></i>수확·출하 요약</a>
+<a class="workspace-link {% if namespace == 'calendar_app' and route != 'summary' %}active{% endif %}" {% if route == 'index' and namespace == 'calendar_app' %}aria-current="page"{% endif %} href="{% url 'calendar_app:index' %}{% if selected_farm %}?farm={{ selected_farm.pk }}{% endif %}"><i class="bi bi-calendar3"></i>캘린더</a>
+{% if selected_farm %}<a class="workspace-link {% if route == 'harvest_outlook' or route == 'model_result' or route == 'forecast_runs' or route == 'forecast_run' %}active{% endif %}" {% if route == 'harvest_outlook' or route == 'forecast_runs' or route == 'forecast_run' %}aria-current="page"{% endif %} href="{% url 'forecaster:harvest_outlook' selected_farm.pk %}"><i class="bi bi-graph-up-arrow"></i>수확일 전망</a>{% else %}<span class="workspace-link text-muted">수확일 전망 · 농장 등록 후</span>{% endif %}
+<a class="workspace-link {% if 'revenue' in route %}active{% endif %}" {% if 'revenue' in route %}aria-current="page"{% endif %} href="{% url 'forecaster:revenue_list' %}{% if selected_farm %}?farm={{ selected_farm.pk }}{% endif %}"><i class="bi bi-calculator"></i>판로별 수취액</a>
+<a class="workspace-link {% if route == 'markets' or route == 'market_analysis' %}active{% endif %}" {% if route == 'markets' or route == 'market_analysis' %}aria-current="page"{% endif %} href="{% url 'forecaster:markets' %}{% if selected_farm %}?farm={{ selected_farm.pk }}{% endif %}"><i class="bi bi-shop"></i>시장 정산자료</a>
+<p class="workspace-nav-label mt-4">내 농장</p>
+<a class="workspace-link {% if namespace == '' and 'farm' in route %}active{% endif %}" {% if namespace == '' and 'farm' in route %}aria-current="page"{% endif %} href="{% url 'farm_list' %}"><i class="bi bi-house"></i>농장 관리</a>
+{% endwith %}

@@ -1,0 +1,51 @@
+{% load static ui_assets %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FarmPick{% endblock %}</title>
+  <!-- Bootstrap 5 -->
+  <link href="{% ui_asset 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="{% ui_asset 'vendor/bootstrap-icons/font/bootstrap-icons.css' %}" rel="stylesheet">
+  {% block extra_head %}{% endblock %}
+  <link href="{% ui_asset 'css/farmmanager.css' %}" rel="stylesheet">
+</head>
+<body>
+<a class="visually-hidden-focusable" href="#main-content">본문으로 이동</a>
+{% with selected_farm=farm|default:workspace_farm %}
+{% if user.is_authenticated %}
+<header class="workspace-header">
+  <a class="workspace-brand" href="{% url 'calendar_app:summary' %}{% if selected_farm %}?farm={{ selected_farm.pk }}{% endif %}"><i class="bi bi-leaf"></i> FarmPick</a>
+  <div class="workspace-header-controls">
+    <button class="btn btn-outline-secondary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#workspaceMenu" aria-controls="workspaceMenu" aria-label="메뉴 열기"><i class="bi bi-list"></i></button>
+    {% if workspace_farms %}<label for="workspace-farm" class="visually-hidden">농장 선택</label><select id="workspace-farm" class="form-select form-select-sm" onchange="location.href='{% url 'calendar_app:summary' %}?farm='+encodeURIComponent(this.value)">{% for item in workspace_farms %}<option value="{{ item.pk }}" {% if item.pk == selected_farm.pk %}selected{% endif %}>{{ item.name }} · {{ item.get_crop_type_display }}</option>{% endfor %}</select>{% endif %}
+    <div class="dropdown"><button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-circle"></i><span class="d-none d-sm-inline ms-1">{{ user.username }}</span></button><ul class="dropdown-menu dropdown-menu-end"><li><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="dropdown-item" type="submit">로그아웃</button></form></li></ul></div>
+  </div>
+</header>
+<div class="workspace-shell">
+  <aside class="workspace-sidebar d-none d-lg-block"><nav aria-label="주요 메뉴">{% include 'workspace_nav.html' %}</nav><div class="workspace-sidebar-note">수확 시점을 살피고<br>내게 맞는 출하를 계획하세요.</div></aside>
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="workspaceMenu" aria-labelledby="workspaceMenuLabel"><div class="offcanvas-header"><h2 class="h5" id="workspaceMenuLabel">FarmPick 메뉴</h2><button class="btn-close" data-bs-dismiss="offcanvas" aria-label="메뉴 닫기"></button></div><div class="offcanvas-body"><nav aria-label="모바일 주요 메뉴">{% include 'workspace_nav.html' %}</nav></div></div>
+{% else %}
+<header class="workspace-header"><a class="workspace-brand" href="{% url 'login' %}">FarmPick</a><div class="d-flex gap-3"><a href="{% url 'login' %}">로그인</a><a href="{% url 'signup' %}">회원가입</a></div></header>
+{% endif %}
+{% endwith %}
+<main id="main-content" class="{% if user.is_authenticated %}workspace-content{% else %}container py-4{% endif %}">
+  <!-- 메시지 -->
+  {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show" role="alert">
+      {{ msg }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+
+  {% block content %}{% endblock %}
+</main>
+{% if user.is_authenticated %}</div>{% endif %}
+
+<script src="{% ui_asset 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

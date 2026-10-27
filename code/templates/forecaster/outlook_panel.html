@@ -1,0 +1,12 @@
+<section class="card p-4 mb-4">
+<h2 class="h5">수확일 예상 참고가격</h2>
+{% if outlook.available %}
+<p class="text-muted">{{ outlook.target }} 수확 예정 · {{ outlook.lead_days }}일 후</p>
+<p class="display-6 fw-bold text-success my-3">{{ outlook.base|floatformat:'0g' }}<span class="fs-5 fw-normal"> 원/kg</span></p>
+<p class="small text-muted">{{ outlook.price_basis.region }} · {{ outlook.price_basis.grade }} · KAMIS 중도매인 판매가격 기준</p>
+{% if outlook.extrapolated %}<p class="small text-warning">이 날짜는 평가한 7~180일 범위 밖입니다. 별도 성능 검증 전의 참고값으로 확인하세요.</p>{% endif %}
+<p class="small text-muted">실제 농가 판매단가와 다를 수 있습니다. 판로별 견적과 비용을 확인한 뒤 수취액 계산에 입력하세요.</p>
+<details class="small mt-2"><summary>가격 전망의 기준</summary><p class="mt-2 mb-1">선정 모델: {{ outlook.model_name }}<br>전망 기준일 {{ outlook.as_of }} · 마지막 관측 {{ outlook.last_observed }}<br>학습 기준일 {{ outlook.trained_as_of }} · 입력 관측 {{ outlook.observations }}개</p></details>
+{% else %}<p class="text-muted mb-0">{{ outlook.reason }}</p>{% endif %}
+<a class="small mt-3" href="{% url 'forecaster:model_result' %}?crop={{ farm.crop_type }}">예측 성능과 선정 기준</a>
+</section>

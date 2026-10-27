@@ -1,0 +1,5 @@
+# Workspace-level repository: share only the Django application.
+# code/.gitignore also works when code/ itself is the repository root.
+/*
+!/.gitignore
+!/code/

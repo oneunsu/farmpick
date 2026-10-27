@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}농장 {{ action }} - FarmPick{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-5">
+    <div class="card p-4 mt-2">
+      <div class="mb-4">
+        <h4 class="fw-bold mb-0">
+          <i class="bi bi-flower2 text-success me-2"></i>농장 {{ action }}
+        </h4>
+      </div>
+
+      <form method="post" id="farmForm">
+        {% csrf_token %}
+
+        <!-- 농장명 -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.name.label }}</label>
+          {{ form.name }}
+          {% for e in form.name.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+
+        <!-- 작물 -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.crop_type.label }}</label>
+          {{ form.crop_type }}
+          {% for e in form.crop_type.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+
+        <!-- 지역 -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.region.label }}</label>
+          {{ form.region }}
+          {% for e in form.region.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+          <div class="form-text text-muted" id="gridInfo"></div>
+        </div>
+
+        <!-- 정식일 -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">{{ form.planting_date.label }}</label>
+          {{ form.planting_date }}
+          {% for e in form.planting_date.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary flex-fill py-2 fw-semibold">
+            <i class="bi bi-check-circle me-1"></i>{{ action }}
+          </button>
+          <a href="{% url 'farm_list' %}" class="btn btn-outline-secondary flex-fill py-2">취소</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── 지역별 격자 정보 표시 ────────────────────────────────────
+const GRID_INFO = {
+  {% for region, coords in grid_data.items %}
+    "{{ region }}": { nx: {{ coords.0 }}, ny: {{ coords.1 }} },
+  {% endfor %}
+};
+
+const regionSelect = document.getElementById('id_region');
+const gridInfo     = document.getElementById('gridInfo');
+
+regionSelect.addEventListener('change', function () {
+  const info = GRID_INFO[this.value];
+  gridInfo.textContent = info ? `기상청 격자: X=${info.nx}, Y=${info.ny}` : '';
+});
+regionSelect.dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

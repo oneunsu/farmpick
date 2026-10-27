@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}시장자료 조회 확인 · FarmPick{% endblock %}
+{% block content %}
+<h1 class="h4">조회 조건을 확인해 주세요</h1>
+<p class="alert alert-warning">{{ error }}</p>
+<a href="{% url 'forecaster:markets' %}" class="btn btn-success">시장 정산자료로</a>
+{% endblock %}

@@ -1,0 +1,23 @@
+<section class="card p-3 mb-3 channel-card">
+  <div class="d-flex justify-content-between gap-2 mb-2"><h2 class="h5">판매 판로</h2><label class="small">{{ channel_form.DELETE }} 이 판로 제외</label></div>
+  {{ channel_form.non_field_errors }}
+  {% for hidden in channel_form.hidden_fields %}{{ hidden }}{{ hidden.errors }}{% endfor %}
+  <div class="row g-3">
+    <div class="col-md-6">{{ channel_form.name.label_tag }}{{ channel_form.name }}{{ channel_form.name.errors }}</div>
+    <div class="col-md-6">{{ channel_form.channel_type.label_tag }}{{ channel_form.channel_type }}{{ channel_form.channel_type.errors }}</div>
+    <div class="col-md-6">{{ channel_form.price_per_kg.label_tag }}{{ channel_form.price_per_kg }}{{ channel_form.price_per_kg.errors }}<div class="form-text">판매가능 1kg의 단가를 직접 입력하세요. 정산 원자료 평균가는 자동 대입하지 않습니다.</div></div>
+    <div class="col-md-6">{{ channel_form.price_source.label_tag }}{{ channel_form.price_source }}{{ channel_form.price_source.errors }}</div>
+    <div class="col-12">{{ channel_form.price_note.label_tag }}{{ channel_form.price_note }}{{ channel_form.price_note.errors }}</div>
+    {% if channel_form.reference_settlement.value %}<div class="col-12 small text-muted">시장 정산자료가 참고 내역으로 연결돼 있습니다. 판매단가는 별도로 입력합니다. <button type="button" class="btn btn-sm btn-outline-secondary" data-clear-reference>참고 연결 해제</button></div>{% endif %}
+    <div class="col-md-6">{{ channel_form.transport_mode.label_tag }}{{ channel_form.transport_mode }}{{ channel_form.transport_mode.errors }}</div>
+    <div class="col-md-6" data-transport="hired">{{ channel_form.freight_cost.label_tag }}{{ channel_form.freight_cost }}{{ channel_form.freight_cost.errors }}<div class="form-text">운송업체에 지급하는 총액입니다.</div></div>
+    <div class="col-md-6" data-transport="self">{{ channel_form.round_trip_km.label_tag }}{{ channel_form.round_trip_km }}{{ channel_form.round_trip_km.errors }}</div>
+    <div class="col-md-6" data-transport="self">{{ channel_form.fuel_efficiency.label_tag }}{{ channel_form.fuel_efficiency }}{{ channel_form.fuel_efficiency.errors }}</div>
+    <div class="col-md-6" data-transport="self">{{ channel_form.fuel_price.label_tag }}{{ channel_form.fuel_price }}{{ channel_form.fuel_price.errors }}<div class="form-text">직접 확인한 유가를 입력합니다. 유가 API는 연동하지 않았습니다.</div></div>
+    <div class="col-md-6" data-transport="self">{{ channel_form.toll_cost.label_tag }}{{ channel_form.toll_cost }}{{ channel_form.toll_cost.errors }}</div>
+    <div class="col-md-4">{{ channel_form.packing_per_kg.label_tag }}{{ channel_form.packing_per_kg }}{{ channel_form.packing_per_kg.errors }}</div>
+    <div class="col-md-4">{{ channel_form.commission_percent.label_tag }}{{ channel_form.commission_percent }}{{ channel_form.commission_percent.errors }}</div>
+    <div class="col-md-4">{{ channel_form.other_cost.label_tag }}{{ channel_form.other_cost }}{{ channel_form.other_cost.errors }}</div>
+  </div>
+  <p class="small text-muted mt-3 mb-0">농가가 직접 부담하는 비용만 입력하세요. 선택한 운송 방식만 계산하며, 상하차·결제 정액비·차량 유지비 등은 기타 출하비용에 포함합니다. 생산비는 아래 비용에 중복 입력하지 않습니다.</p>
+</section>

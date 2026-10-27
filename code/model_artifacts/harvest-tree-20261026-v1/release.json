@@ -1,0 +1,467 @@
+{
+  "benchmark_sha256": "3c0d328a01bfd5c0e0f8b7d69d68071938bd394f9a86b7e676cd366e106b53ad",
+  "config": {
+    "additional_history_not_new_independent_2026_holdout": true,
+    "bootstrap_repetitions": 2000,
+    "cohort": "same_available_targets_all_methods_no_imputed_truth",
+    "correction": {
+      "decay_days": 90,
+      "min_recent_observations": 10,
+      "ratio_max": 2.0,
+      "ratio_min": 0.5,
+      "recent_days": 28
+    },
+    "data_variant": "extended_2016_2026",
+    "frozen_at_utc_before_run": "2026-10-23T10:47:52.291472+00:00",
+    "horizons": [
+      7,
+      14,
+      30,
+      60,
+      90,
+      180
+    ],
+    "lstm": {
+      "batch_size": 128,
+      "deterministic": true,
+      "device": "cuda",
+      "ensemble": "arithmetic_mean_of_seed_price_predictions",
+      "epochs": 25,
+      "gradient_clip": 1.0,
+      "head_size": 32,
+      "hidden_size": 16,
+      "layers": 1,
+      "learning_rate": 0.003,
+      "log_return_numeric_clip": [
+        -10,
+        10
+      ],
+      "loss": "SmoothL1_beta_0.5",
+      "seeds": [
+        11,
+        29,
+        47
+      ],
+      "weight_decay": 0.01
+    },
+    "methods": [
+      "last",
+      "service",
+      "seasonal",
+      "seasonal_corrected",
+      "tree",
+      "lstm",
+      "timesfm"
+    ],
+    "minimum_target_observed_fraction": 0.5,
+    "origin_step_days": 5,
+    "parent_protocol_sha256": "97a0609c19c27dd178c24669f43b57c415cd3fbf9a5e9833f194dd992c64d9c6",
+    "seasonal": {
+      "max_years": 5,
+      "min_observations_per_year": 10,
+      "min_years": 2,
+      "window_days": 14
+    },
+    "seed": 20261023,
+    "snapshot_sha256": {
+      "paprika": "d22fcd108119e2130c956cfa8ed06d9910164f6747106114e99eb20f2d675b31",
+      "tomato": "31ef16f3c310c36c8921e20bcb382f6254b44baacecf62a552706548c7ad1580"
+    },
+    "snapshots": {
+      "paprika": "data/kamis/paprika_20160101_20261022/snapshot.json",
+      "tomato": "data/kamis/tomato_20160101_20261022/snapshot.json"
+    },
+    "status": "exploratory_reused_data_fixed_configuration",
+    "target_windows": [
+      1,
+      7,
+      14
+    ],
+    "test_end": "2026-10-22",
+    "test_start": "2026-01-01",
+    "training": {
+      "anchor_step_days": 5,
+      "label_maturity": "entire_target_window_end_at_or_before_fit_date",
+      "minimum_rows": 100,
+      "model_selection": "2025_validation_point_WAPE_per_crop_and_lead_only",
+      "refit": "first_eligible_origin_each_month",
+      "sequence_days": 56,
+      "tuning": "none_fixed_hyperparameters"
+    },
+    "tree": {
+      "early_stopping": false,
+      "implementation": "sklearn.ensemble.HistGradientBoostingRegressor",
+      "l2_regularization": 1.0,
+      "learning_rate": 0.05,
+      "loss": "absolute_error",
+      "max_iter": 100,
+      "max_leaf_nodes": 7,
+      "min_samples_leaf": 20,
+      "random_state": 11
+    },
+    "validation_end": "2025-12-31",
+    "validation_start": "2025-01-01",
+    "version": "harvest-model-comparison-v1"
+  },
+  "crops": {
+    "paprika": {
+      "last_label_end": "2026-10-22",
+      "last_observed": "2026-10-22",
+      "model_sha256": "5c692c0732809b7a0865b9a522264639821fa5ce316b64f34b3ce94c890bcd67",
+      "snapshot_path": "data/kamis/paprika_20160101_20261022/snapshot.json",
+      "snapshot_sha256": "d22fcd108119e2130c956cfa8ed06d9910164f6747106114e99eb20f2d675b31",
+      "train_rows": 11783
+    },
+    "tomato": {
+      "last_label_end": "2026-10-22",
+      "last_observed": "2026-10-22",
+      "model_sha256": "0989012cf799c86b954252770ce054946b380b9310c655247c50121133c8fc77",
+      "snapshot_path": "data/kamis/tomato_20160101_20261022/snapshot.json",
+      "snapshot_sha256": "31ef16f3c310c36c8921e20bcb382f6254b44baacecf62a552706548c7ad1580",
+      "train_rows": 11787
+    }
+  },
+  "evaluated_horizons": [
+    7,
+    14,
+    30,
+    60,
+    90,
+    180
+  ],
+  "evaluation_is_exploratory": true,
+  "evidence_macro_wape": {
+    "test": {
+      "last": 31.839713955586365,
+      "lstm": 16.42549950109912,
+      "seasonal": 15.61363884903942,
+      "seasonal_corrected": 18.141637120901862,
+      "timesfm": 30.377130282539554,
+      "tree": 18.35720949513809
+    },
+    "validation": {
+      "last": 25.031780349245043,
+      "lstm": 15.603872269898773,
+      "seasonal": 15.27472068369717,
+      "seasonal_corrected": 15.245344736182759,
+      "timesfm": 27.558355808050525,
+      "tree": 14.825553445430609
+    }
+  },
+  "evidence_scores": {
+    "paprika": [
+      {
+        "direction_accuracy": 70.58823529411765,
+        "lead": 7,
+        "mae": 676.2344871415676,
+        "method": "tree",
+        "n": 51,
+        "rmse": 974.1722545370104,
+        "split": "validation",
+        "wape": 10.551358340386328,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 72.91666666666666,
+        "lead": 14,
+        "mae": 782.4805871106267,
+        "method": "tree",
+        "n": 48,
+        "rmse": 1010.127248085502,
+        "split": "validation",
+        "wape": 12.468982199492093,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 86.36363636363636,
+        "lead": 30,
+        "mae": 849.7815978285834,
+        "method": "tree",
+        "n": 44,
+        "rmse": 1304.7830954751091,
+        "split": "validation",
+        "wape": 13.51648795655453,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 100.0,
+        "lead": 60,
+        "mae": 836.7331188654067,
+        "method": "tree",
+        "n": 39,
+        "rmse": 1235.876927927103,
+        "split": "validation",
+        "wape": 13.83980170142283,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 97.14285714285714,
+        "lead": 90,
+        "mae": 923.2887245909221,
+        "method": "tree",
+        "n": 35,
+        "rmse": 1345.6883834477933,
+        "split": "validation",
+        "wape": 15.77485470519315,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 62.5,
+        "lead": 180,
+        "mae": 1162.2830611286017,
+        "method": "tree",
+        "n": 24,
+        "rmse": 1643.2603315633776,
+        "split": "validation",
+        "wape": 18.969339734982483,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 76.31578947368422,
+        "lead": 7,
+        "mae": 1044.8051165216864,
+        "method": "tree",
+        "n": 38,
+        "rmse": 1480.8027256748246,
+        "split": "test",
+        "wape": 17.875355425209396,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 82.05128205128204,
+        "lead": 14,
+        "mae": 1194.3101679069298,
+        "method": "tree",
+        "n": 39,
+        "rmse": 1548.4553988272219,
+        "split": "test",
+        "wape": 19.97653863734121,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 91.42857142857143,
+        "lead": 30,
+        "mae": 1438.9598708810872,
+        "method": "tree",
+        "n": 35,
+        "rmse": 1893.7575292293018,
+        "split": "test",
+        "wape": 25.100972608619276,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 96.7741935483871,
+        "lead": 60,
+        "mae": 1253.201860218057,
+        "method": "tree",
+        "n": 31,
+        "rmse": 1663.4077018239418,
+        "split": "test",
+        "wape": 23.77322763178622,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 85.71428571428571,
+        "lead": 90,
+        "mae": 1169.67460345249,
+        "method": "tree",
+        "n": 28,
+        "rmse": 1645.7287465289396,
+        "split": "test",
+        "wape": 22.69387240269251,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 87.5,
+        "lead": 180,
+        "mae": 1857.313117694125,
+        "method": "tree",
+        "n": 16,
+        "rmse": 2274.771932656733,
+        "split": "test",
+        "wape": 35.06018155156442,
+        "width": 1
+      }
+    ],
+    "tomato": [
+      {
+        "direction_accuracy": 52.94117647058824,
+        "lead": 7,
+        "mae": 423.2436674833237,
+        "method": "tree",
+        "n": 51,
+        "rmse": 618.6253198596448,
+        "split": "validation",
+        "wape": 10.831327202300956,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 64.58333333333334,
+        "lead": 14,
+        "mae": 607.0574876699304,
+        "method": "tree",
+        "n": 48,
+        "rmse": 812.8645696747833,
+        "split": "validation",
+        "wape": 15.583557634961634,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 65.9090909090909,
+        "lead": 30,
+        "mae": 698.8835017089374,
+        "method": "tree",
+        "n": 44,
+        "rmse": 877.0096726003109,
+        "split": "validation",
+        "wape": 17.745632433588927,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 84.61538461538461,
+        "lead": 60,
+        "mae": 637.0010387015521,
+        "method": "tree",
+        "n": 39,
+        "rmse": 819.9455203710486,
+        "split": "validation",
+        "wape": 16.18070180047581,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 80.0,
+        "lead": 90,
+        "mae": 633.7222100050353,
+        "method": "tree",
+        "n": 35,
+        "rmse": 766.8866862925112,
+        "split": "validation",
+        "wape": 16.194357125775745,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 70.83333333333334,
+        "lead": 180,
+        "mae": 696.0248847788895,
+        "method": "tree",
+        "n": 24,
+        "rmse": 839.4478306685581,
+        "split": "validation",
+        "wape": 16.25024051003283,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 60.526315789473685,
+        "lead": 7,
+        "mae": 262.99276638720966,
+        "method": "tree",
+        "n": 38,
+        "rmse": 376.512720922059,
+        "split": "test",
+        "wape": 7.681335794990137,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 69.23076923076923,
+        "lead": 14,
+        "mae": 450.3342855018629,
+        "method": "tree",
+        "n": 39,
+        "rmse": 620.3743352180918,
+        "split": "test",
+        "wape": 12.783158506006648,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 88.57142857142857,
+        "lead": 30,
+        "mae": 314.77030737864834,
+        "method": "tree",
+        "n": 35,
+        "rmse": 408.1188424799991,
+        "split": "test",
+        "wape": 9.066263502956557,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 83.87096774193549,
+        "lead": 60,
+        "mae": 414.7487733804844,
+        "method": "tree",
+        "n": 31,
+        "rmse": 560.8064601735139,
+        "split": "test",
+        "wape": 11.997696964274398,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 85.71428571428571,
+        "lead": 90,
+        "mae": 504.88001812941235,
+        "method": "tree",
+        "n": 28,
+        "rmse": 657.4493463630993,
+        "split": "test",
+        "wape": 14.706671078631295,
+        "width": 1
+      },
+      {
+        "direction_accuracy": 93.75,
+        "lead": 180,
+        "mae": 762.9847850682493,
+        "method": "tree",
+        "n": 16,
+        "rmse": 894.3108006545293,
+        "split": "test",
+        "wape": 19.57123983758495,
+        "width": 1
+      }
+    ]
+  },
+  "feature_version": "causal-ffill7-seq56-logreturn-calendar-season-v1",
+  "historical_sha256": "676f863282f7192675d098df64c895fb150b5b9737cea3e1bee569608549e465",
+  "historical_tree_macro_wape": 18.838932583644237,
+  "method": "tree",
+  "model_id": "harvest-tree-20261026-v1",
+  "selection": {
+    "criterion": "2025-point-WAPE-equal-crop-equal-lead",
+    "rankings": [
+      {
+        "method": "tree",
+        "validation_macro_wape": 14.825553445430609
+      },
+      {
+        "method": "seasonal_corrected",
+        "validation_macro_wape": 15.245344736182759
+      },
+      {
+        "method": "seasonal",
+        "validation_macro_wape": 15.27472068369717
+      },
+      {
+        "method": "lstm",
+        "validation_macro_wape": 15.603872269898773
+      },
+      {
+        "method": "last",
+        "validation_macro_wape": 25.031780349245043
+      },
+      {
+        "method": "timesfm",
+        "validation_macro_wape": 27.558355808050525
+      }
+    ],
+    "selected": "tree"
+  },
+  "source_sha256": {
+    "forecaster\\management\\commands\\train_selected_price_model.py": "247da8a3dbe37f8d786aaf3dff51e2546f16867f56676296a18ef290ea13b6b5",
+    "forecaster\\predictors\\harvest_models.py": "23df11852007f9a4e93e8684fd19ec159b6027478749d0c20584847011020529",
+    "forecaster\\selected_forecast.py": "f2e1bb9ce7507c5d203d4c1f3c38b4b6f77e043f9dd29af7c427bbcc05b4bd47"
+  },
+  "trained_as_of": "2026-10-26",
+  "versions": {
+    "joblib": "1.5.3",
+    "numpy": "2.2.6",
+    "scikit-learn": "1.7.2"
+  }
+}

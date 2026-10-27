@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}수확일 전망 성능 검증{% endblock %}
+{% block content %}
+<h1 class="h3">수확일 전망 성능 검증</h1>
+<p><a href="{% url 'forecaster:model_comparison' %}?crop={{ crop }}">계절 보정·트리·작은 LSTM·TimesFM 추가 비교</a></p>
+<p><a href="{% url 'forecaster:model_comparison' %}?crop={{ crop }}&history=extended">2016년부터 수집한 이력으로 추가 검증</a></p>
+<p><a class="me-3" href="?crop=paprika">파프리카</a><a href="?crop=tomato">토마토</a></p>
+<p>대상은 <strong>{{ crop_name }} KAMIS 참고가격</strong>입니다. 다른 작물·시장별 판매단가·농가 수취액의 예측 정확도를 검증한 결과가 아닙니다.</p>
+{% if summary %}
+<div class="alert alert-warning">2026년 자료를 이미 확인한 뒤 진행한 탐색적 검증입니다. 독립적인 새 최종 평가가 아닙니다. 실제 정산 단가와 수확량·비용 자료가 없어 농가 소득 개선은 검증하지 못했습니다.</div>
+<p>{{ summary.quality.first_observation }}~{{ summary.quality.last_observation }} 관측 이력에서 2025년과 2026년을 시간순으로 나눴습니다. 아래는 2026년 결과이며, 5일마다 기준일을 이동해 수확 예정일 당일 실제 관측과 비교했습니다. 없는 관측을 보간해 정답으로 쓰지 않았습니다. 같은 표본에서 최근가(last), 실제 GPU TimesFM(timesfm), 화면에 사용하는 전망(service)을 비교합니다.</p>
+<p class="small text-muted">service는 30일 이내 최근 관측가 유지, 31일 이후 과거 같은 계절 중앙값입니다. WAPE는 절대오차 합계÷실제가격 합계×100이며 작을수록 좋습니다. ‘100−WAPE’를 예측 정확도로 표현하지 않습니다.</p>
+<div class="table-responsive"><table class="table"><thead><tr><th>수확까지</th><th>방법</th><th>관측 수</th><th>MAE 원/kg</th><th>WAPE %</th></tr></thead><tbody>{% for row in scores %}<tr><td>{{ row.lead }}일</td><td>{{ row.method }}</td><td>{{ row.n }}</td><td>{{ row.mae|floatformat:2 }}</td><td>{{ row.wape|floatformat:2 }}</td></tr>{% endfor %}</tbody></table></div>
+<h2 class="h5">과거 시나리오 범위의 한계</h2><ul>{% for row in ranges %}<li>{{ row.lead }}일: 실제 관측 포함 {{ row.empirical_inside_percent|floatformat:1 }}% · {{ row.n }}개</li>{% endfor %}</ul>
+<p>장기 중앙값은 이번 표본에서 TimesFM보다 오차가 작았지만, 범위를 벗어난 실제 가격도 있었습니다. 미래 판매가 보장이나 확률 구간으로 사용할 수 없습니다. {% if crop == 'paprika' %}30일 뒤 최근가 기준 전망의 WAPE도 약 40%로 높습니다.{% endif %} 실제 출하 전 견적과 최신 가격을 다시 확인하세요.</p>
+<p class="small text-muted">최대 180일까지만 평가했습니다. 181~365일 표시는 계산 가능한 계절 참고자료이며 해당 기간의 성능은 미검증입니다. 평가 가능한 공통 목표일 {{ summary.paired_targets }}개, 제외 {{ summary.excluded_targets }}개. 미공시·자료 부족 제외 상세와 월 블록 부트스트랩은 저장된 평가 파일에 있습니다. 과거 공시 당시 판본과 이후 정정 여부는 확인하지 못했습니다.</p>
+<details class="small"><summary>재현 식별자</summary>버전 {{ summary.version }}<br><span style="overflow-wrap:anywhere">스냅샷 SHA256 {{ summary.snapshot_sha256 }}<br>평가 규칙 SHA256 {{ summary.protocol_sha256 }}</span><br>GPU {{ summary.environment.gpu }}</details>
+{% else %}<p>아직 저장된 실제 평가 결과가 없습니다.</p>{% endif %}
+{% endblock %}

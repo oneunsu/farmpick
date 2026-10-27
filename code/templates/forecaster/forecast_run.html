@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load ui_assets %}
+{% block title %}저장한 수확일 전망 · FarmPick{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">발행 당시 결과 보존</p><h1>저장한 수확일 전망</h1><p class="text-muted mb-0">전망 생성 {{ run.issued_at|date:'Y.m.d H:i:s' }} · 대상일 {{ run.target_date|date:'Y.m.d' }}</p></div><a class="btn btn-outline-secondary" href="{% url 'forecaster:forecast_runs' %}?farm={{ farm.pk }}">발행 이력</a></div>
+<p class="small text-muted">당시 입력으로 생성한 결과입니다. 최신 자료로 다시 계산한 전망은 별도로 확인할 수 있습니다.</p>
+<p class="small text-muted">저장 당시 작물: {{ run.crop_label }}</p>
+{% include 'forecaster/outlook_panel.html' %}
+{% include 'forecaster/market_projection_panel.html' %}
+<div class="d-flex flex-wrap gap-2 mb-4"><a class="btn btn-success" href="{% url 'forecaster:revenue_create' %}?farm={{ farm.pk }}&target={{ run.target_date|date:'Y-m-d' }}&forecast_run={{ run.pk }}">이 전망을 연결해 수취액 계산</a><a class="btn btn-outline-success" href="{% url 'forecaster:harvest_outlook' farm.pk %}?target={{ run.target_date|date:'Y-m-d' }}">현재 자료로 전망 확인</a></div>
+{% include 'forecaster/harvest_chart_panel.html' %}
+<details class="small"><summary>발행 기록</summary><dl class="row mt-3"><dt class="col-sm-4">모델</dt><dd class="col-sm-8">{{ run.model_id }}</dd><dt class="col-sm-4">입력 관측</dt><dd class="col-sm-8">{{ run.payload.input_records|length }}개</dd><dt class="col-sm-4">입력 식별자</dt><dd class="col-sm-8 text-break">{{ run.input_sha256|default:'전망 불가로 입력 확인 전 종료' }}</dd></dl></details>
+{% endblock %}
+{% block extra_js %}{% if chart.available %}<script src="{% ui_asset 'vendor/chartjs/chart.umd.js' %}"></script><script src="{% ui_asset 'js/harvest_chart.js' %}"></script>{% endif %}{% endblock %}

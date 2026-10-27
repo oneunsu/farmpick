@@ -1,0 +1,614 @@
+{
+  "attempted_targets": 642,
+  "comparisons": [
+    {
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "improvement_percent": 0.0,
+      "lead": 7,
+      "months": 12,
+      "split": "validation"
+    },
+    {
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "improvement_percent": 0.0,
+      "lead": 14,
+      "months": 12,
+      "split": "validation"
+    },
+    {
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "improvement_percent": 0.0,
+      "lead": 30,
+      "months": 11,
+      "split": "validation"
+    },
+    {
+      "ci95": [
+        -63.3587786259542,
+        71.9309462915601
+      ],
+      "improvement_percent": 37.97892720306513,
+      "lead": 60,
+      "months": 2,
+      "split": "validation"
+    },
+    {
+      "ci95": [
+        37.971014492753625,
+        77.96184738955823
+      ],
+      "improvement_percent": 61.59549228944247,
+      "lead": 90,
+      "months": 2,
+      "split": "validation"
+    },
+    {
+      "ci95": [
+        35.62699755593157,
+        83.97517795218106
+      ],
+      "improvement_percent": 68.17595379984027,
+      "lead": 180,
+      "months": 2,
+      "split": "validation"
+    },
+    {
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "improvement_percent": 0.0,
+      "lead": 7,
+      "months": 10,
+      "split": "test"
+    },
+    {
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "improvement_percent": 0.0,
+      "lead": 14,
+      "months": 10,
+      "split": "test"
+    },
+    {
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "improvement_percent": 0.0,
+      "lead": 30,
+      "months": 9,
+      "split": "test"
+    },
+    {
+      "ci95": [
+        -30.33368955620929,
+        70.5182464265751
+      ],
+      "improvement_percent": 41.44834404349975,
+      "lead": 60,
+      "months": 8,
+      "split": "test"
+    },
+    {
+      "ci95": [
+        -12.114783385439928,
+        77.98592638102495
+      ],
+      "improvement_percent": 55.517445298639856,
+      "lead": 90,
+      "months": 7,
+      "split": "test"
+    },
+    {
+      "ci95": [
+        39.00982213963366,
+        76.69781221513217
+      ],
+      "improvement_percent": 62.1976034365815,
+      "lead": 180,
+      "months": 4,
+      "split": "test"
+    }
+  ],
+  "crop": "tomato",
+  "environment": {
+    "backend": "gpu",
+    "batch_size": 8,
+    "cpu_threads": 4,
+    "cuda": "13.0",
+    "gpu": "NVIDIA GeForce RTX 3060 Ti",
+    "numpy": "2.2.6",
+    "python": "3.10.20",
+    "torch": "2.12.0+cu130"
+  },
+  "excluded_targets": 288,
+  "model": {
+    "checkpoint_sha256": "e6f83ebb8f448b66ad49d61b2f73aea0f68ffb20a83f1695c30badb1a5792eeb",
+    "repo": "google/timesfm-1.0-200m-pytorch",
+    "revision": "0581e2c56cb06feb51cfd98fc2b4005b74f7187b"
+  },
+  "paired_targets": 354,
+  "protocol_sha256": "46a8b1bc2972dae748af8c0be49d057d5aa8bd2de3b45a92a3337a31ee2ec493",
+  "quality": {
+    "calendar_days": 1096,
+    "first_observation": "2023-10-23",
+    "gaps_over_7_days": [],
+    "last_observation": "2026-10-22",
+    "latest_lag_days_from_requested_end": 0,
+    "longest_internal_gap_days": 7,
+    "max_price": 11260.0,
+    "min_price": 2124.0,
+    "missing_calendar_days": 366,
+    "missing_note": "미공시 사유는 응답만으로 확정할 수 없음; 휴일·누락을 단정하지 않음",
+    "missing_weekdays": 54,
+    "observations": 730,
+    "observations_by_year": {
+      "2023": 48,
+      "2024": 244,
+      "2025": 242,
+      "2026": 196
+    },
+    "price_basis": {
+      "action": "periodWholesaleProductList",
+      "code_reference": "https://www.kamis.or.kr/customer/board/board_file.do?brdno=4&brdctsno=424245&brdctsfileno=15636",
+      "code_reference_sha256": "98d00a808a758b89b95588d98e76ecae996150a6ed90d921ffa6b87c174e3b46",
+      "grade": "상품",
+      "price_type": "wholesale",
+      "region": "전국 평균",
+      "request": {
+        "p_convert_kg_yn": "Y",
+        "p_countrycode": "",
+        "p_itemcategorycode": "200",
+        "p_itemcode": "225",
+        "p_kindcode": "00",
+        "p_productrankcode": "04"
+      },
+      "response": {
+        "countyname": "평균",
+        "itemname": "토마토",
+        "kindname": "토마토(1kg)",
+        "marketname": null,
+        "rank": "",
+        "unit": ""
+      },
+      "source": "https://www.kamis.or.kr/service/price/xml.do",
+      "unit": "KRW/kg",
+      "unit_basis": "p_convert_kg_yn=Y"
+    }
+  },
+  "scenario_ranges": [
+    {
+      "empirical_inside_percent": 37.5,
+      "lead": 60,
+      "mean_width": 1278.0000000000002,
+      "n": 8,
+      "split": "validation"
+    },
+    {
+      "empirical_inside_percent": 37.5,
+      "lead": 90,
+      "mean_width": 1278.0000000000002,
+      "n": 8,
+      "split": "validation"
+    },
+    {
+      "empirical_inside_percent": 37.5,
+      "lead": 180,
+      "mean_width": 1278.0000000000002,
+      "n": 8,
+      "split": "validation"
+    },
+    {
+      "empirical_inside_percent": 48.38709677419355,
+      "lead": 60,
+      "mean_width": 1591.012903225807,
+      "n": 31,
+      "split": "test"
+    },
+    {
+      "empirical_inside_percent": 53.57142857142857,
+      "lead": 90,
+      "mean_width": 1526.1642857142863,
+      "n": 28,
+      "split": "test"
+    },
+    {
+      "empirical_inside_percent": 81.25,
+      "lead": 180,
+      "mean_width": 1590.3500000000004,
+      "n": 16,
+      "split": "test"
+    }
+  ],
+  "scores": [
+    {
+      "direction_accuracy": 0.0,
+      "lead": 7,
+      "mae": 393.7647058823529,
+      "method": "last",
+      "n": 51,
+      "rmse": 540.0352566558711,
+      "split": "validation",
+      "wape": 10.07692423489741
+    },
+    {
+      "direction_accuracy": 54.90196078431373,
+      "lead": 7,
+      "mae": 402.93802179074754,
+      "method": "timesfm",
+      "n": 51,
+      "rmse": 542.1135370682398,
+      "split": "validation",
+      "wape": 10.311680697350116
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 7,
+      "mae": 393.7647058823529,
+      "method": "service",
+      "n": 51,
+      "rmse": 540.0352566558711,
+      "split": "validation",
+      "wape": 10.07692423489741
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 14,
+      "mae": 650.5208333333334,
+      "method": "last",
+      "n": 48,
+      "rmse": 875.3509653276221,
+      "split": "validation",
+      "wape": 16.699289778804605
+    },
+    {
+      "direction_accuracy": 54.166666666666664,
+      "lead": 14,
+      "mae": 725.6236928304037,
+      "method": "timesfm",
+      "n": 48,
+      "rmse": 1127.587189754961,
+      "split": "validation",
+      "wape": 18.627228669757507
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 14,
+      "mae": 650.5208333333334,
+      "method": "service",
+      "n": 48,
+      "rmse": 875.3509653276221,
+      "split": "validation",
+      "wape": 16.699289778804605
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 30,
+      "mae": 824.0227272727273,
+      "method": "last",
+      "n": 44,
+      "rmse": 1075.4022186224938,
+      "split": "validation",
+      "wape": 20.923092903680022
+    },
+    {
+      "direction_accuracy": 43.18181818181818,
+      "lead": 30,
+      "mae": 1219.5230934836648,
+      "method": "timesfm",
+      "n": 44,
+      "rmse": 1911.8921860951623,
+      "split": "validation",
+      "wape": 30.965401970881402
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 30,
+      "mae": 824.0227272727273,
+      "method": "service",
+      "n": 44,
+      "rmse": 1075.4022186224938,
+      "split": "validation",
+      "wape": 20.923092903680022
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 60,
+      "mae": 1044.0,
+      "method": "last",
+      "n": 8,
+      "rmse": 1286.2254856750428,
+      "split": "validation",
+      "wape": 22.167958381993845
+    },
+    {
+      "direction_accuracy": 12.5,
+      "lead": 60,
+      "mae": 3136.8642578125,
+      "method": "timesfm",
+      "n": 8,
+      "rmse": 3692.1832386390593,
+      "split": "validation",
+      "wape": 66.60716122332519
+    },
+    {
+      "direction_accuracy": 62.5,
+      "lead": 60,
+      "mae": 647.5,
+      "method": "service",
+      "n": 8,
+      "rmse": 717.6545129796092,
+      "split": "validation",
+      "wape": 13.748805605690626
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 90,
+      "mae": 1686.0,
+      "method": "last",
+      "n": 8,
+      "rmse": 2046.9391783831782,
+      "split": "validation",
+      "wape": 35.799978766323385
+    },
+    {
+      "direction_accuracy": 50.0,
+      "lead": 90,
+      "mae": 2468.8758544921875,
+      "method": "timesfm",
+      "n": 8,
+      "rmse": 3153.104620643235,
+      "split": "validation",
+      "wape": 52.42331148725315
+    },
+    {
+      "direction_accuracy": 62.5,
+      "lead": 90,
+      "mae": 647.5,
+      "method": "service",
+      "n": 8,
+      "rmse": 717.6545129796092,
+      "split": "validation",
+      "wape": 13.748805605690626
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 180,
+      "mae": 2034.625,
+      "method": "last",
+      "n": 8,
+      "rmse": 2195.7398809968363,
+      "split": "validation",
+      "wape": 43.202569274869944
+    },
+    {
+      "direction_accuracy": 100.0,
+      "lead": 180,
+      "mae": 1174.7825622558594,
+      "method": "timesfm",
+      "n": 8,
+      "rmse": 1338.143890126414,
+      "split": "validation",
+      "wape": 24.944953015306496
+    },
+    {
+      "direction_accuracy": 100.0,
+      "lead": 180,
+      "mae": 647.5,
+      "method": "service",
+      "n": 8,
+      "rmse": 717.6545129796092,
+      "split": "validation",
+      "wape": 13.748805605690626
+    },
+    {
+      "direction_accuracy": 2.631578947368421,
+      "lead": 7,
+      "mae": 287.2631578947368,
+      "method": "last",
+      "n": 38,
+      "rmse": 447.471963249919,
+      "split": "test",
+      "wape": 8.39021090819652
+    },
+    {
+      "direction_accuracy": 55.26315789473685,
+      "lead": 7,
+      "mae": 293.13241416529604,
+      "method": "timesfm",
+      "n": 38,
+      "rmse": 462.81996897724315,
+      "split": "test",
+      "wape": 8.561636643209471
+    },
+    {
+      "direction_accuracy": 2.631578947368421,
+      "lead": 7,
+      "mae": 287.2631578947368,
+      "method": "service",
+      "n": 38,
+      "rmse": 447.471963249919,
+      "split": "test",
+      "wape": 8.39021090819652
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 14,
+      "mae": 472.4102564102564,
+      "method": "last",
+      "n": 39,
+      "rmse": 710.9418815728603,
+      "split": "test",
+      "wape": 13.409805519972052
+    },
+    {
+      "direction_accuracy": 51.28205128205128,
+      "lead": 14,
+      "mae": 519.2354266826923,
+      "method": "timesfm",
+      "n": 39,
+      "rmse": 772.9875576933994,
+      "split": "test",
+      "wape": 14.738981629661843
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 14,
+      "mae": 472.4102564102564,
+      "method": "service",
+      "n": 39,
+      "rmse": 710.9418815728603,
+      "split": "test",
+      "wape": 13.409805519972052
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 30,
+      "mae": 550.0571428571428,
+      "method": "last",
+      "n": 35,
+      "rmse": 740.0488014796244,
+      "split": "test",
+      "wape": 15.843181144869812
+    },
+    {
+      "direction_accuracy": 42.857142857142854,
+      "lead": 30,
+      "mae": 638.6475306919643,
+      "method": "timesfm",
+      "n": 35,
+      "rmse": 798.4648515275163,
+      "split": "test",
+      "wape": 18.394831605894492
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 30,
+      "mae": 550.0571428571428,
+      "method": "service",
+      "n": 35,
+      "rmse": 740.0488014796244,
+      "split": "test",
+      "wape": 15.843181144869812
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 60,
+      "mae": 1044.1290322580646,
+      "method": "last",
+      "n": 31,
+      "rmse": 1360.7550086435056,
+      "split": "test",
+      "wape": 30.204173043186145
+    },
+    {
+      "direction_accuracy": 70.96774193548387,
+      "lead": 60,
+      "mae": 836.1427907636089,
+      "method": "timesfm",
+      "n": 31,
+      "rmse": 1120.3528707841087,
+      "split": "test",
+      "wape": 24.187625054749613
+    },
+    {
+      "direction_accuracy": 83.87096774193549,
+      "lead": 60,
+      "mae": 611.3548387096774,
+      "method": "service",
+      "n": 31,
+      "rmse": 763.0311370639026,
+      "split": "test",
+      "wape": 17.68504348475234
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 90,
+      "mae": 1207.857142857143,
+      "method": "last",
+      "n": 28,
+      "rmse": 1580.3231134350794,
+      "split": "test",
+      "wape": 35.18372102700678
+    },
+    {
+      "direction_accuracy": 85.71428571428571,
+      "lead": 90,
+      "mae": 894.6152256556919,
+      "method": "timesfm",
+      "n": 28,
+      "rmse": 1147.9939993087805,
+      "split": "test",
+      "wape": 26.05928417290102
+    },
+    {
+      "direction_accuracy": 78.57142857142857,
+      "lead": 90,
+      "mae": 537.2857142857143,
+      "method": "service",
+      "n": 28,
+      "rmse": 667.6292812203919,
+      "split": "test",
+      "wape": 15.650617951812244
+    },
+    {
+      "direction_accuracy": 0.0,
+      "lead": 180,
+      "mae": 1105.75,
+      "method": "last",
+      "n": 16,
+      "rmse": 1226.5785747354305,
+      "split": "test",
+      "wape": 28.36347313069129
+    },
+    {
+      "direction_accuracy": 43.75,
+      "lead": 180,
+      "mae": 1188.4170227050781,
+      "method": "timesfm",
+      "n": 16,
+      "rmse": 1286.9353938045742,
+      "split": "test",
+      "wape": 30.48395594985451
+    },
+    {
+      "direction_accuracy": 93.75,
+      "lead": 180,
+      "mae": 418.0,
+      "method": "service",
+      "n": 16,
+      "rmse": 546.4521937004188,
+      "split": "test",
+      "wape": 10.722072592022574
+    }
+  ],
+  "snapshot_sha256": "1ff0f12d2d337b53c3ee2661e4b2407d90ce6f9d9d375491a6bece88d3d12e48",
+  "source_sha256": {
+    "evaluation\\harvest.py": "3564faa5df2d25c2550b45db6233c4e6ab09a45ac14e1809d8ee502e2b95c698",
+    "evaluation\\metrics.py": "34e6c414ecbb5fabfc585460eb3b495b00ae026f3009c693fbe3c4a821492ea1",
+    "forecast_config.py": "1c503e25145d20fad1053a1be08a98b91d12d3f6136614948010950f280e6968",
+    "harvest_outlook.py": "64cda947abec61f9fa35527d3e8c16d79ad9a774cd73098c5fba17bb013c8273",
+    "model_loader.py": "0c384682fd79b041cf8833e0220c6c5592fa1a4dff794fe6cae88d73a6dcf37f",
+    "predictors\\timesfm.py": "ddd45c6c1fca89153952f6a268503c7669ace3cf0251d2834a2f6c92a4d3b54e",
+    "price_predictor.py": "9334c2dceb9452af41c5b4cac69247acce7bc95ddd852cc1ca4d1881432b2f50"
+  },
+  "status": "exploratory_reused_2026_data_no_tuning",
+  "timing": {
+    "inference_and_row_seconds": 1.6956741999601945,
+    "load_seconds": 1.9637187999906018,
+    "peak_cuda_mb": 791.45361328125
+  },
+  "version": "harvest-last30-season14-q20-50-80-v1"
+}

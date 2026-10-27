@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}수취액 계산 · FarmPick{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4">
+  <div><p class="text-success fw-semibold mb-1">수확물의 출하 대안 비교</p><h1 class="h3 fw-bold">수취액 계산</h1><p class="text-muted">판매가능 수량과 판로별 단가·비용을 입력해 남는 금액을 비교하세요.</p></div>
+  {% if farm %}<div><a class="btn btn-success" href="{% url 'forecaster:revenue_create' %}?farm={{ farm.pk }}">새 계산 만들기</a></div>{% endif %}
+</div>
+<div class="row g-3">
+{% for plan in plans %}
+  <div class="col-md-6 col-lg-4"><a class="card p-3 h-100 text-decoration-none" href="{% url 'forecaster:revenue_detail' plan.pk %}"><h2 class="h5">{{ plan.title }}</h2><p class="text-muted mb-1">{{ plan.farm.get_crop_type_display }} · 수확 {{ plan.harvest_date|date:'Y-m-d' }}</p><p class="mb-0">예상 수확 {{ plan.harvest_kg|floatformat:'-3g' }} kg · {{ plan.channels.count }}개 판로</p></a></div>
+{% empty %}
+  <div class="col-12"><div class="card p-4 text-center"><h2 class="h5">저장된 계산이 없습니다</h2><p class="text-muted mb-0">{% if farm %}새 계산을 만들어 수확량과 판로별 출하비용을 입력하세요.{% else %}농장을 등록한 뒤 계산을 시작할 수 있습니다.{% endif %}</p></div></div>
+{% endfor %}
+</div>
+{% endblock %}

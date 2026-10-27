@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load ui_assets %}
+{% block title %}수확일 전망{% endblock %}
+{% block content %}
+<h1 class="h3">{{ farm.name }} · {{ farm.get_crop_type_display }} 수확일 전망</h1>
+<details class="card p-3 my-3"><summary>전망에 사용하는 KAMIS 가격자료</summary><p class="small text-muted mt-3">과거 공시 가격을 가져와 전망과 그래프의 입력 자료를 갱신합니다. 예측 모델을 다시 학습하는 기능은 아닙니다.</p><form method="post" action="{% url 'forecaster:update_price' farm.pk %}">{% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-success">KAMIS 가격자료 갱신</button></form></details>
+<p class="small text-muted">현재 전망을 확인한 뒤 발행하면 당시 가격·입력 자료·그래프를 이력으로 보존합니다.</p>
+{% if capture_error %}<p class="text-danger small">{{ capture_error }}</p>{% endif %}
+<form method="post" action="{% url 'forecaster:issue_forecast' farm.pk %}" class="d-flex flex-wrap gap-2 my-3">{% csrf_token %}<input type="hidden" name="forecast_token" value="{{ forecast_token }}"><label for="outlook-date" class="align-self-center">수확 예정일</label><input class="form-control w-auto" id="outlook-date" type="date" name="target" required value="{{ target|date:'Y-m-d' }}"><button class="btn btn-success" name="action" value="save" {% if capture_error %}disabled{% endif %}>전망 발행·저장</button><button class="btn btn-outline-success" name="action" value="revenue" {% if capture_error %}disabled{% endif %}>저장하고 수취액 계산</button><a class="btn btn-outline-secondary" href="{% url 'forecaster:forecast_runs' %}?farm={{ farm.pk }}">발행 이력</a></form>
+{% if schedules %}<p class="small">등록한 수확 일정: {% for schedule in schedules %}<a class="me-3" href="?target={{ schedule.scheduled_at|date:'Y-m-d' }}">{{ schedule.task_name }} {{ schedule.scheduled_at|date:'Y-m-d' }}</a>{% endfor %}</p>{% endif %}
+{% include 'forecaster/outlook_panel.html' %}
+{% include 'forecaster/harvest_chart_panel.html' %}
+<a class="btn btn-outline-secondary" href="{% url 'calendar_app:index' %}?farm={{ farm.pk }}">캘린더</a>
+{% endblock %}
+{% block extra_js %}
+{% if chart.available %}<script src="{% ui_asset 'vendor/chartjs/chart.umd.js' %}"></script><script src="{% ui_asset 'js/harvest_chart.js' %}"></script>{% endif %}
+{% endblock %}

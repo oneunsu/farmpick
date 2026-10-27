@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}가격 전망의 성능과 기준{% endblock %}
+{% block content %}
+<h1 class="h3">가격 전망의 성능과 기준</h1>
+{% if release %}
+<section class="card p-4 mb-4"><p class="text-success fw-semibold mb-1">웹에 적용한 선정 모델</p><h2 class="h4">{{ model_name }}</h2><p>과거 가격 흐름과 계절·수확일까지 남은 기간을 함께 반영합니다. 작물별 자료로 학습한 같은 방식의 모델을 사용합니다.</p><p class="mb-0">2025년 검증에서 두 작물·6개 기간을 같은 비중으로 평가한 평균 WAPE는 <strong>{{ release.evidence_macro_wape.validation.tree|floatformat:2 }}%</strong>였습니다.</p></section>
+<p class="small text-muted">WAPE는 실제 가격에 대한 전체 절대오차의 비율이며 낮을수록 좋습니다. ‘100−WAPE’를 정확도로 표현하지 않습니다. 아래는 같은 모델 구조를 월별로 학습한 과거 평가 결과로, 현재 배포 가중치의 미래 정확도를 보장하지 않습니다.</p>
+<p><a class="me-3" href="?crop=tomato">토마토</a><a href="?crop=paprika">파프리카</a></p><h2 class="h5">{{ crop_name }} 평가 기록</h2>
+<div class="table-responsive"><table class="table"><thead><tr><th>수확까지</th><th>2025년 검증 WAPE</th><th>2026년 참고 WAPE</th><th>2026년 표본</th></tr></thead><tbody>{% for row in rows %}<tr><td>{{ row.lead }}일</td><td>{{ row.validation.wape|floatformat:2 }}%</td><td>{{ row.test.wape|floatformat:2 }}%</td><td>{{ row.test.n }}개</td></tr>{% endfor %}</tbody></table></div>
+<p class="small text-muted">2026년 자료는 이미 확인한 뒤 재사용한 탐색적 결과입니다. 모든 작물·기간에서 언제나 가장 좋은 성능을 보장하는 것은 아닙니다. 7일 미만·180일 초과 기간과 다른 작물의 성능은 별도 검증 전입니다. KAMIS 참고가격의 평가이며 실제 농가 수취액·소득 개선을 검증한 수치는 아닙니다.</p>
+<details class="small"><summary>선정·학습 기록</summary><p class="mt-2">선정 기준: 2025년의 두 작물·7/14/30/60/90/180일 당일 가격 WAPE에 동일 가중치 적용.<br>학습 기준일 {{ release.trained_as_of }} · 모델 버전 {{ release.model_id }}<br>전체 2026년 평균 WAPE {{ release.evidence_macro_wape.test.tree|floatformat:2 }}% · 별도 과거 연도 점검 평균 {{ release.historical_tree_macro_wape|floatformat:2 }}%</p></details>
+{% if user.is_staff %}<p class="small mt-3"><a href="{% url 'forecaster:model_comparison' %}?crop={{ crop }}&history=extended">관리자용 실험 기록</a></p>{% endif %}
+{% else %}<p>{{ reason }}</p>{% endif %}
+<a class="btn btn-outline-secondary mt-3" href="{% url 'calendar_app:index' %}">캘린더</a>
+{% endblock %}

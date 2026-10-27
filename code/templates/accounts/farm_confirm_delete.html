@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}농장 삭제 확인 - FarmPick{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card p-4 mt-3 text-center">
+      <i class="bi bi-exclamation-triangle-fill text-danger mb-3" style="font-size:3rem;"></i>
+      <h5 class="fw-bold">농장을 삭제하시겠습니까?</h5>
+      <p class="text-muted">
+        <strong>{{ farm.name }}</strong> ({{ farm.get_crop_type_display }}, {{ farm.region_code }}) 농장과
+        관련된 예보 데이터가 모두 삭제됩니다.
+      </p>
+      <form method="post" class="d-flex gap-2 justify-content-center mt-2">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger px-4">
+          <i class="bi bi-trash me-1"></i>삭제
+        </button>
+        <a href="{% url 'farm_list' %}" class="btn btn-outline-secondary px-4">취소</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

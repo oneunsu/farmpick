@@ -1,0 +1,3 @@
+# Keep exact bytes: runtime model and input checksums must survive Git checkout.
+# Disable automatic line-ending conversion without disabling text diffs.
+* -text

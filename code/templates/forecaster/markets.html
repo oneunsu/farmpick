@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load ui_assets %}
+{% block title %}시장 정산자료 · FarmPick{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+  <div>
+    <p class="text-success fw-semibold mb-1">출하 판단을 위한 시장 정보</p>
+    <h1 class="h3 fw-bold">시장 정산자료</h1>
+    <p class="text-muted mb-0">같은 품종과 규격을 선택해 여러 시장의 과거 정산 내역을 확인하세요.</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'calendar_app:index' %}{% if farm %}?farm={{ farm.pk }}{% endif %}">수확 일정으로</a>
+  {% if farm %}<a class="btn btn-success" href="{% url 'forecaster:market_analysis' farm.pk %}">농장 작물의 대표가격·시장별 수취액</a>{% endif %}
+</div>
+<div class="alert alert-light border mb-3">
+  <strong>KAMIS 참고 시세와 구분되는 aT 시장 정산자료입니다.</strong>
+  과거 거래 내역이며 미래 판매단가나 농가의 예상 수취액을 의미하지 않습니다.
+</div>
+{% if crop_mismatch %}
+<div class="alert alert-warning">선택한 농장 작물은 {{ farm.get_crop_type_display }}입니다. 현재 {{ crop_label }} 자료를 둘러보고 있으며 농장의 수확 일정에 적용되지 않습니다.</div>
+{% endif %}
+{% if farm %}
+<details class="card p-3 mb-4" id="market-collection" {% if not dates %}open{% endif %}>
+  <summary class="fw-semibold"><i class="bi bi-cloud-download me-2"></i>새 시장자료 수집</summary>
+  <p class="small text-muted mt-3">작물·정산일·시장을 선택하면 aT 정산자료 전체 페이지를 받아 이 화면에 연결합니다. 시장·날짜·품목당 최대 30페이지이며, 수집 중 건수가 바뀌거나 한도를 초과하면 완료로 처리하지 않습니다. 오늘 자료는 아직 공시되지 않았을 수 있습니다.</p>
+  <form id="market-collection-form" action="{% url 'forecaster:market_collect' %}" method="post">
+    {% csrf_token %}{{ collection_form.farm }}
+    <div class="row g-3"><div class="col-md-6"><div class="mb-3">{{ collection_form.crop.label_tag }}{{ collection_form.crop }}</div><div class="row g-3"><div class="col-sm-6">{{ collection_form.date.label_tag }}{{ collection_form.date }}</div><div class="col-sm-6">{{ collection_form.end_date.label_tag }}{{ collection_form.end_date }}</div></div><div class="form-text">시작일·종료일을 포함해 최대 7일입니다. 같은 날짜를 선택하면 하루만 수집합니다.</div></div><div class="col-md-6"><fieldset><legend class="fs-6 mb-2">수집 시장</legend><div class="d-flex justify-content-between gap-2 mb-2"><label class="d-flex align-items-center gap-2"><input type="checkbox" id="collection-select-all" class="form-check-input m-0">전체 선택</label><span id="collection-selection-count" class="small text-muted" aria-live="polite"></span></div>{{ collection_form.market }}<div class="form-text">{{ collection_form.market.help_text }}</div></fieldset></div></div>
+    <p class="small mt-3 mb-0" id="collection-workload" role="status" aria-live="polite"></p>
+    <div class="mt-3 d-flex gap-3 align-items-center"><button type="submit" class="btn btn-success" id="collection-submit">선택한 시장자료 수집</button><span class="small text-muted">수집 중에는 이 화면을 유지해주세요.</span></div>
+  </form>
+  <div id="collection-status" class="mt-3" role="status" aria-live="polite" hidden><p class="fw-semibold mb-2" id="collection-message"></p><div class="d-flex align-items-center justify-content-between gap-3 mb-2"><span id="collection-elapsed" class="small text-muted"></span><button type="button" class="btn btn-sm btn-outline-secondary" id="collection-stop" hidden>수집 중단</button></div><progress id="collection-progress" class="w-100" value="0" max="1" aria-label="시장·날짜 수집 진행"></progress><ol id="collection-log" class="collection-log mt-2"></ol><a id="collection-result" class="btn btn-sm btn-outline-success" hidden>수집한 자료 보기</a></div>
+</details>
+{% endif %}
+<form method="get" class="card p-3 mb-4" aria-label="시장자료 조회 조건">
+  <div class="row g-3">
+    {% if farm %}<input type="hidden" name="farm" value="{{ farm.pk }}">{% endif %}
+    <div class="col-6">
+      <label for="market-crop" class="form-label">조회 작물</label>
+      <select id="market-crop" name="crop" class="form-select">
+        {% for choice in crop_choices %}<option value="{{ choice.value }}" {% if crop == choice.value %}selected{% endif %}>{{ choice.label }}{% if not choice.available %} · 자료 없음{% endif %}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-6">
+      <label for="market-date" class="form-label">정산일</label>
+      <select id="market-date" name="date" class="form-select">
+        <option value="">해당 작물의 최근 수집일</option>
+        {% for day in dates %}<option value="{{ day }}" {% if selected_date == day %}selected{% endif %}>{{ day }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-12 d-flex gap-2">
+      <button type="submit" class="btn btn-success">작물·날짜 조회</button>
+      <a class="btn btn-outline-secondary" href="{% url 'forecaster:markets' %}{% if farm %}?farm={{ farm.pk }}{% endif %}">농장 작물로 초기화</a>
+    </div>
+  </div>
+</form>
+{% if not dates %}
+<div class="card p-4 text-center">
+  <h2 class="h5">{{ crop_label }} 정산자료가 아직 없습니다</h2>
+  <p class="text-muted">해당 작물의 수집 자료를 가져온 뒤 시장별 내역이 표시됩니다. 다른 작물 자료는 위 조회 작물에서 선택할 수 있습니다.</p>
+  <p class="small text-muted mb-0">농장 작물이 다르면 자료를 자동으로 섞지 않습니다.</p>
+</div>
+{% else %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="card p-3 h-100"><div class="text-muted small">정산일</div><strong>{{ selected_date }}</strong></div></div>
+  <div class="col-6 col-lg-3"><div class="card p-3 h-100"><div class="text-muted small">조건에 맞는 시장</div><strong>{{ market_count }}개</strong></div></div>
+  <div class="col-6 col-lg-3"><div class="card p-3 h-100"><div class="text-muted small">조건에 맞는 정산 내역</div><strong>{{ row_count }}건</strong></div></div>
+  <div class="col-6 col-lg-3"><div class="card p-3 h-100"><div class="text-muted small">작물·날짜 전체 수집</div><strong>{{ received_count }} / {{ total_count }}건</strong><span class="small text-muted">{{ covered_market_count }}개 시장 조회</span></div></div>
+</div>
+{% if partial %}<div class="alert alert-warning">일부 시장은 표본만 수집됐습니다. 표시된 내역을 전체 거래나 시장 대표가격으로 해석하지 마세요.</div>{% endif %}
+<div class="card p-3 mb-4">
+  <h2 class="h6 fw-bold mb-3">비교 조건</h2>
+  <form method="get" class="row g-3">
+    {% if farm %}<input type="hidden" name="farm" value="{{ farm.pk }}">{% endif %}
+    <input type="hidden" name="crop" value="{{ crop }}"><input type="hidden" name="date" value="{{ selected_date }}">
+    {% for filter in filters %}
+    <div class="col-6 col-md-4 col-xl-3">
+      <label for="filter-{{ filter.key }}" class="form-label">{{ filter.label }}</label>
+      <select id="filter-{{ filter.key }}" name="{{ filter.key }}" class="form-select">
+        <option value="">전체</option>
+        {% for value,label in filter.choices %}<option value="{{ value }}" {% if filter.selected == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    {% endfor %}
+    <div class="col-12"><button class="btn btn-success" type="submit">조건 적용</button></div>
+  </form>
+</div>
+<div class="alert alert-light border">
+  <strong>가격을 비교하기 전에 품질·출하단위를 맞춰주세요.</strong>
+  {{ quality_unknown_count }}건에는 품종·품질·규격 등에 미확인 항목이 있습니다.
+  총거래금액·중량·가격 범위를 대조해 환산 가능한 행만 원/kg을 표시합니다. 품질·규격 미확인 행은 별도 대표가격 비교에서 제외됩니다. 환산은 내부 정합성 확인이며 실제 농가 정산서 대조는 남아 있습니다.
+</div>
+<div class="card overflow-hidden mb-3">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0" style="min-width: 1080px">
+      <caption class="px-3">{{ crop_label }} · {{ selected_date }} · aT 정산 관측자료 (원자료 기준)</caption>
+      <thead><tr><th scope="col">시장 / 법인</th><th scope="col">품종 / 산지</th><th scope="col">등급 / 크기 / 포장</th><th scope="col">출하단위</th><th scope="col" class="text-end">원자료 평균가</th><th scope="col" class="text-end">원자료 총거래금액</th><th scope="col" class="text-end">원자료 단위총물량</th></tr></thead>
+      <tbody>
+      {% for row in page_obj %}
+        <tr>
+          <td><strong>{{ row.market_name }}</strong><div class="small text-muted">{{ row.dimensions.corporation.name }}</div>{% if row.invalid_values %}<span class="badge text-bg-warning">수치 확인 필요</span>{% endif %}{% if farm and not crop_mismatch %}<a class="small d-block mt-1" href="{% url 'forecaster:revenue_create' %}?farm={{ farm.pk }}&reference={{ row.pk }}">수취액 계산에 참고</a>{% endif %}</td>
+          <td>{{ row.variety_name }}<div class="small text-muted">{{ row.dimensions.origin.name }}</div></td>
+          <td>{% for dim in row.dimensions_display %}<div class="small">{{ dim.label }}: {{ dim.name }}{% if not dim.verified and dim.name != '미확인' %} <span class="text-warning-emphasis">· 코드 확인 필요</span>{% endif %}</div>{% endfor %}</td>
+          <td>{{ row.weight_label }}{% if not row.dimensions.unit.verified %}<div class="small text-warning-emphasis">단위 미확인</div>{% endif %}</td>
+          <td class="text-end">{% if row.average_price is not None %}{{ row.average_price|floatformat:"0g" }}원{% else %}미확인{% endif %}<div class="small text-muted">{% if row.conversion.available %}금액/중량: {{ row.conversion.krw_per_kg|floatformat:"2g" }}원/kg{% else %}환산 제외: {{ row.conversion.reason }}{% endif %}</div></td>
+          <td class="text-end">{% if row.total_amount is not None %}{{ row.total_amount|floatformat:"0g" }}원{% else %}미확인{% endif %}</td>
+          <td class="text-end">{% if row.total_quantity is not None %}{{ row.total_quantity|floatformat:"3g" }}{% else %}미확인{% endif %}<div class="small text-muted">환산 전</div></td>
+        </tr>
+      {% empty %}<tr><td colspan="7" class="text-center py-5">선택한 조건에 맞는 정산 내역이 없습니다. 비교 조건을 조정해 주세요.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="d-flex flex-wrap justify-content-between gap-2 mb-4">
+  <p class="small text-muted mb-0">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}페이지 · 자료 수신 {{ collected_at|date:"Y-m-d H:i" }} (한국시간)</p>
+  <nav aria-label="정산자료 페이지">
+    {% if page_obj.has_previous %}<a class="btn btn-sm btn-outline-secondary" href="?{{ query_without_page }}&page={{ page_obj.previous_page_number }}">이전</a>{% endif %}
+    {% if page_obj.has_next %}<a class="btn btn-sm btn-outline-secondary" href="?{{ query_without_page }}&page={{ page_obj.next_page_number }}">다음</a>{% endif %}
+  </nav>
+</div>
+{% endif %}
+<p class="small text-muted">출처: <a href="https://www.data.go.kr/data/15141809/openapi.do" target="_blank" rel="noopener noreferrer">한국농수산식품유통공사 전국 공영도매시장 정산정보</a>. KAMIS 참고 시세·가격 예측은 수확 일정 화면에서 확인할 수 있습니다.</p>
+{% endblock %}
+{% block extra_js %}
+<script src="{% ui_asset 'js/market_collection.js' %}"></script>
+{% endblock %}

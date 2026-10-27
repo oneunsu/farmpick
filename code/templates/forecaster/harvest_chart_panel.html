@@ -1,0 +1,15 @@
+<section class="card p-3 p-md-4 mb-4" aria-labelledby="outlook-chart-heading">
+  <h2 class="h5 fw-bold" id="outlook-chart-heading">수확기까지의 가격 흐름</h2>
+  {% if chart.available %}
+  <p class="small text-muted">최근 90일의 실제 가격과 기준일 이후의 가격 전망을 함께 확인하세요.</p>
+  <div class="d-flex flex-wrap gap-3 small mb-3"><span>실선 · 공시 실제가</span><span>점선 · 예측 참고가</span><span>연녹색 배경 · 수확 기간</span><span>회색 배경 · 별도 검증 전</span></div>
+  <div class="outlook-chart-wrap"><canvas id="harvest-outlook-chart" role="img" aria-label="최근 90일 공시가격과 수확일까지의 예측 참고가격. 날짜별 값은 아래 표에서도 확인할 수 있습니다."></canvas></div>
+  <p class="small text-muted mt-3 mb-2">기준일 {{ chart.as_of }} · 마지막 공시일 {{ chart.last_observed }} · 단위 원/kg. 그래프를 터치하거나 마우스를 올리면 날짜별 가격을 확인할 수 있습니다.</p>
+  {% if chart.harvest_start %}<p class="small mb-2">등록한 수확 시작 {{ chart.harvest_start }}{% if chart.harvest_end %} ~ 종료 {{ chart.harvest_end }}{% else %} · 종료 일정 미등록{% endif %}</p>{% else %}<p class="small text-muted mb-2">수확 시작·종료 일정이 없어 수확 기간 배경은 표시하지 않습니다.</p>{% endif %}
+  <p class="small text-muted mb-2">공시되지 않은 날짜는 빈 값으로 두고 선을 끊습니다. 기준일 이후는 모두 예측이며, 성능 평가 시점은 7·14·30·60·90·180일입니다. 7일 미만·180일 초과 기간은 별도 성능 검증 전입니다. 예측 선은 관측 날짜 사이의 가격을 메운 값이나 신뢰구간이 아닙니다.</p>
+  {% if chart.truncated %}<p class="small text-warning">수확 종료일이 계산 가능한 범위를 넘어 그래프는 기준일부터 365일까지 표시합니다.</p>{% endif %}
+  <details class="small mt-2"><summary>날짜별 가격을 표로 보기</summary><div class="table-responsive mt-2" style="max-height:280px"><table class="table table-sm"><thead><tr><th scope="col">날짜</th><th scope="col">공시 실제가 (원/kg)</th><th scope="col">예측 참고가 (원/kg)</th></tr></thead><tbody>{% for row in chart.rows %}<tr><td>{{ row.date }}</td><td>{% if row.observed is not None %}{{ row.observed|floatformat:'0g' }}{% else %}—{% endif %}</td><td>{% if row.forecast is not None %}{{ row.forecast|floatformat:'0g' }}{% else %}—{% endif %}</td></tr>{% endfor %}</tbody></table></div></details>
+  {{ chart|json_script:'harvest-chart-data' }}
+  <p id="harvest-chart-error" class="text-danger small mt-2" role="status" hidden></p>
+  {% else %}<p class="text-muted mb-0">{{ chart.reason }}</p>{% endif %}
+</section>
